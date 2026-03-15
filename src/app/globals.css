@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Kalam:wght@300;400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #FFFDF8;
+    color: #1F1A17;
+    font-family: 'Kalam', cursive;
+  }
+}
+
+@layer components {
+  .retro-card {
+    @apply bg-surface border-2 border-border rounded-2xl shadow-soft transition-all duration-200;
+  }
+  .retro-card-hover:hover {
+    @apply shadow-retro -translate-y-0.5;
+  }
+  .retro-btn {
+    @apply font-hand font-bold px-5 py-2.5 rounded-xl border-2 border-dark shadow-retro transition-all duration-150 cursor-pointer inline-flex items-center gap-2;
+  }
+  .retro-btn:hover {
+    @apply shadow-retro-lg -translate-x-0.5 -translate-y-0.5;
+  }
+  .retro-btn:active {
+    @apply translate-x-0 translate-y-0 shadow-none;
+  }
+  .retro-btn-pink  { @apply retro-btn bg-accent-pink text-white; }
+  .retro-btn-mint  { @apply retro-btn bg-accent-mint text-white; }
+  .retro-btn-yellow { @apply retro-btn bg-accent-yellow text-dark; }
+  .retro-btn-ghost { @apply retro-btn bg-transparent text-txt-primary border-border shadow-none hover:border-accent-pink hover:shadow-soft; }
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono border border-border bg-bg-secondary text-txt-secondary;
+  }
+  .chip-pink  { @apply chip bg-accent-pink/10 border-accent-pink/30 text-accent-pink; }
+  .chip-mint  { @apply chip bg-accent-mint/10 border-accent-mint/30 text-accent-mint; }
+  .chip-yellow { @apply chip bg-accent-yellow/20 border-accent-yellow/40 text-dark; }
+  .chip-blue  { @apply chip bg-accent-blue/10 border-accent-blue/30 text-accent-blue; }
+  .section-label { @apply font-pixel text-[10px] tracking-widest uppercase text-txt-secondary mb-3; }
+  .tab-pill { @apply px-4 py-2 rounded-full text-sm font-hand font-bold border-2 border-border bg-white text-txt-primary cursor-pointer transition-all duration-200 whitespace-nowrap; }
+  .tab-pill:hover { @apply border-accent-pink; }
+  .tab-pill.active { @apply bg-accent-pink text-white border-accent-pink; }
+  .input-field {
+    @apply w-full px-4 py-3 bg-bg-secondary border-2 border-border rounded-xl font-mono text-sm text-txt-primary
+    placeholder:text-txt-secondary/50
+    focus:outline-none focus:border-accent-pink focus:ring-2 focus:ring-accent-pink/20
+    transition-all duration-200;
+  }
+  .star-filled { @apply text-accent-yellow; }
+  .star-empty  { @apply text-border; }
+}
+
+@layer utilities {
+  .scanlines {
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.025) 0px, transparent 1px, transparent 3px);
+    animation: scan 10s linear infinite;
+  }
+  .paper-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+  .float-anim { animation: float 4s ease-in-out infinite; }
+  .float-anim-slow { animation: float 6s ease-in-out infinite; }
+}
+
+@keyframes scan {
+  from { background-position-y: 0; }
+  to   { background-position-y: 10px; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0)   rotate(0deg); }
+  50%       { transform: translateY(-12px) rotate(3deg); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up { animation: fadeInUp 0.4s ease forwards; }

@@ -1,0 +1,45 @@
+@import './tokens.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: 'Kalam', cursive;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Press Start 2P', cursive;
+  }
+  .font-mono-custom {
+    font-family: 'Space Mono', monospace;
+  }
+  .font-body {
+    font-family: 'Kalam', cursive;
+  }
+
+  .text-pink { color: var(--accent-pink); }
+  .text-yellow { color: var(--accent-yellow); }
+  .text-mint { color: var(--accent-mint); }
+  .text-blue-accent { color: var(--accent-blue); }
+  .bg-surface { background-color: var(--surface-card); }
+  .bg-primary-custom { background-color: var(--bg-primary); }
+  .bg-secondary-custom { background-color: var(--bg-secondary); }
+  .border-custom { border-color: var(--border); }
+
+  .shadow-retro { box-shadow: 4px 4px 0 rgba(0,0,0,0.15); }
+  .shadow-retro-lg { box-shadow: 6px 6px 0 rgba(0,0,0,0.18); }
+  .shadow-retro-pink { box-shadow: 4px 4px 0 rgba(255, 107, 157, 0.3); }
+}

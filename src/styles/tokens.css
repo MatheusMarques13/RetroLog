@@ -1,0 +1,141 @@
+:root {
+  /* Backgrounds */
+  --bg-primary: #FFFDF8;
+  --bg-secondary: #F5F0E8;
+  --surface-card: #FFF9F0;
+
+  /* Text */
+  --text-primary: #1F1A17;
+  --text-secondary: #6E6258;
+
+  /* Borders */
+  --border: #E5E0DA;
+
+  /* Accents */
+  --accent-pink: #FF6B9D;
+  --accent-yellow: #FFD93D;
+  --accent-mint: #6BCB77;
+  --accent-blue: #7BD3EA;
+
+  /* Dark */
+  --dark-panel: #171717;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.10);
+  --shadow-retro: 4px 4px 0 rgba(0, 0, 0, 0.15);
+  --shadow-retro-lg: 6px 6px 0 rgba(0, 0, 0, 0.18);
+
+  /* Fonts */
+  --font-display: 'Press Start 2P', cursive;
+  --font-body: 'Kalam', cursive;
+  --font-mono: 'Space Mono', monospace;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+}
+
+/* Paper grain texture overlay */
+.paper-grain {
+  position: relative;
+}
+.paper-grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* Scanline overlay */
+.scanlines {
+  position: relative;
+  overflow: hidden;
+}
+.scanlines::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.015) 2px,
+    rgba(0, 0, 0, 0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Retro button */
+.btn-retro {
+  position: relative;
+  border: 2px solid var(--text-primary);
+  box-shadow: var(--shadow-retro);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+.btn-retro:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-retro-lg);
+}
+.btn-retro:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+}
+
+/* Sticker tag */
+.tag-sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  border: 1.5px solid currentColor;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+/* Card base */
+.card-base {
+  background: var(--surface-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+/* Section header label */
+.section-label {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetroLog - Every Watch. Every Playthrough. Every Listen. Logged.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #FFFDF8;
+            --bg-secondary: #F5F0E8;
+            --accent-pink: #FF6B9D;
+            --accent-yellow: #FFD93D;
+            --accent-mint: #6BCB77;
+            --border-color: #E5E0DA;
+            --text-dark: #2C2416;
+            --text-muted: #8B7E6A;
+            --shadow: rgba(0,0,0,0.06);
+            --shadow-md: rgba(0,0,0,0.1);
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background:
+                radial-gradient(ellipse at top, rgba(255,107,157,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom, rgba(107,203,119,0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+        .hero {
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center;
+            position: relative;
+            padding: 60px 20px;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .static-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        .static-bg::before {
+            content: '';
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.03) 3px);
+            animation: scanlines 8s linear infinite;
+        }
+        .static-bg::after {
+            content: '';
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(90deg, rgba(255,107,157,0.03), rgba(255,107,157,0.03) 1px, rgba(107,203,119,0.02) 1px, rgba(107,203,119,0.02) 2px, rgba(255,217,61,0.03) 2px, rgba(255,217,61,0.03) 3px);
+            background-size: 3px 100%;
+            opacity: 0.4;
+            animation: vhsDistort 0.3s infinite;
+        }
+        @keyframes scanlines { 0% { transform: translateY(0); } 100% { transform: translateY(10px); } }
+        @keyframes vhsDistort { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.45; } }
+        @keyframes wiggle { 0%,100% { transform: translate(-2px,-2px) rotate(0deg); } 25% { transform: translate(-2px,-2px) rotate(-2deg); } 75% { transform: translate(-2px,-2px) rotate(2deg); } }
+        @keyframes float { 0%,100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .logo { font-family: 'Press Start 2P', cursive; font-size: clamp(2rem,8vw,4rem); color: var(--accent-pink); margin-bottom: 20px; position: relative; z-index: 2; text-shadow: 4px 4px 0 var(--accent-yellow); }
+        .tagline { font-size: clamp(1.2rem,3vw,1.8rem); font-weight: 400; color: var(--text-dark); margin-bottom: 40px; position: relative; z-index: 2; }
+        .cta-button { font-family: 'DM Sans', sans-serif; font-size: 1.4rem; font-weight: 700; padding: 18px 40px; background-color: var(--accent-pink); color: white; border: 4px solid var(--text-dark); border-radius: 12px; cursor: pointer; box-shadow: 6px 6px 0 var(--text-dark); transition: all 0.2s ease; text-decoration: none; display: inline-block; position: relative; z-index: 2; }
+        .cta-button:hover { animation: wiggle 0.5s ease infinite; transform: translate(-2px,-2px); box-shadow: 8px 8px 0 var(--text-dark); }
+        .floating-icon { position: absolute; width: 60px; height: 60px; animation: float 4s ease-in-out infinite; z-index: 1; }
+        .floating-icon:nth-child(1) { top: 15%; left: 10%; animation-delay: 0s; }
+        .floating-icon:nth-child(2) { top: 25%; right: 15%; animation-delay: 1s; }
+        .floating-icon:nth-child(3) { bottom: 30%; left: 20%; animation-delay: 2s; }
+        .floating-icon:nth-child(4) { bottom: 20%; right: 10%; animation-delay: 3s; }
+        .media-tabs-section { padding: 80px 20px; background-color: var(--bg-secondary); }
+        .tabs-container { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+        .tab { font-family: 'DM Sans', sans-serif; font-size: 1.1rem; font-weight: 700; padding: 12px 28px; background-color: white; color: var(--text-dark); border: 3px solid var(--border-color); border-radius: 50px; cursor: pointer; transition: all 0.3s ease; }
+        .tab:hover { border-color: var(--accent-pink); transform: translateY(-2px); }
+        .tab.active { background-color: var(--accent-pink); color: white; border-color: var(--accent-pink); }
+        .tab-content { display: none; background-color: white; border: 4px solid var(--text-dark); border-radius: 16px; padding: 40px; box-shadow: 8px 8px 0 var(--shadow-md); max-width: 600px; margin: 0 auto; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+        .tab-content h3 { font-family: 'Press Start 2P', cursive; font-size: 1.2rem; color: var(--accent-pink); margin-bottom: 20px; }
+        .star-rating { display: flex; gap: 8px; margin: 20px 0; }
+        .star { width: 32px; height: 32px; background-color: var(--accent-yellow); clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); }
+        .featured-review { padding: 80px 20px; background-color: var(--bg-primary); }
+        .review-card { max-width: 700px; margin: 0 auto; background: linear-gradient(135deg, #2C2416 0%, #4A3F2E 100%); border: 6px solid white; border-radius: 8px; padding: 40px; box-shadow: 0 12px 24px var(--shadow-md), 0 0 0 8px var(--text-dark); position: relative; transform: rotate(-1deg); }
+        .review-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+        .avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-mint), var(--accent-yellow)); border: 3px solid white; }
+        .review-meta h4 { color: white; font-size: 1.3rem; font-weight: 700; }
+        .review-meta .media-title { color: var(--accent-yellow); font-size: 1.1rem; }
+        .review-quote { color: white; font-size: 1.2rem; line-height: 1.8; margin-bottom: 20px; }
+        .read-more { color: var(--accent-mint); text-decoration: none; font-weight: 700; border-bottom: 2px solid var(--accent-mint); }
+        .stats-bar { background-color: var(--accent-pink); padding: 40px 20px; overflow: hidden; }
+        .marquee { display: flex; gap: 60px; animation: marquee 20s linear infinite; white-space: nowrap; }
+        .marquee span { font-family: 'Space Mono', monospace; font-size: clamp(1.2rem,3vw,2rem); font-weight: 700; color: white; text-shadow: 3px 3px 0 rgba(0,0,0,0.2); }
+        .how-it-works { padding: 80px 20px; background-color: var(--bg-secondary); }
+        .how-it-works h2 { font-family: 'Press Start 2P', cursive; font-size: clamp(1.5rem,4vw,2.5rem); text-align: center; color: var(--accent-pink); margin-bottom: 60px; }
+        .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 40px; max-width: 1000px; margin: 0 auto; }
+        .step-card { background-color: var(--accent-yellow); border: 4px solid var(--text-dark); border-radius: 12px; padding: 32px; box-shadow: 6px 6px 0 var(--shadow-md); transition: transform 0.3s ease; }
+        .step-card:hover { transform: translateY(-8px); }
+        .step-icon { width: 64px; height: 64px; margin: 0 auto 16px; display: block; }
+        .step-card h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 12px; }
+        .step-card p { font-size: 1.1rem; line-height: 1.6; }
+        .activity-feed { padding: 80px 20px; background-color: var(--bg-primary); }
+        .activity-feed h2 { font-family: 'Press Start 2P', cursive; font-size: clamp(1.5rem,4vw,2.5rem); text-align: center; color: var(--accent-mint); margin-bottom: 60px; }
+        .feed-container { max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .activity-item { display: flex; align-items: center; gap: 16px; background-color: white; border: 3px solid var(--border-color); border-radius: 12px; padding: 20px; transition: all 0.3s ease; }
+        .activity-item:hover { border-color: var(--accent-mint); transform: translateX(8px); box-shadow: 4px 4px 0 var(--shadow); }
+        .activity-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-pink), var(--accent-yellow)); border: 3px solid var(--border-color); flex-shrink: 0; }
+        .activity-text { flex: 1; }
+        .activity-text strong { color: var(--accent-pink); font-weight: 700; }
+        .activity-time { font-size: 0.9rem; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+        .cta-footer { background-color: var(--accent-yellow); padding: 100px 20px; text-align: center; position: relative; }
+        .cta-footer h2 { font-family: 'Press Start 2P', cursive; font-size: clamp(2rem,5vw,3.5rem); color: var(--text-dark); margin-bottom: 40px; line-height: 1.4; }
+        .footer-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+        .footer-btn { font-family: 'DM Sans', sans-serif; font-size: 1.3rem; font-weight: 700; padding: 16px 36px; border: 4px solid var(--text-dark); border-radius: 12px; cursor: pointer; box-shadow: 6px 6px 0 var(--text-dark); transition: all 0.2s ease; text-decoration: none; display: inline-block; }
+        .footer-btn.filled { background-color: var(--accent-pink); color: white; }
+        .footer-btn.outlined { background-color: transparent; color: var(--text-dark); }
+        .footer-btn:hover { transform: translate(-2px,-2px); box-shadow: 8px 8px 0 var(--text-dark); }
+        .badge { position: absolute; bottom: 30px; right: 30px; font-family: 'Press Start 2P', cursive; font-size: 0.8rem; background-color: var(--accent-mint); color: white; padding: 12px 20px; border: 3px solid var(--text-dark); border-radius: 50%; box-shadow: 4px 4px 0 var(--text-dark); transform: rotate(12deg); }
+        .page { display: none; }
+        .page.active { display: block; }
+        .nav-back { position: fixed; top: 20px; left: 20px; font-family: 'DM Sans', sans-serif; font-size: 1.1rem; font-weight: 700; padding: 12px 24px; background-color: var(--accent-mint); color: white; border: 3px solid var(--text-dark); border-radius: 8px; cursor: pointer; box-shadow: 4px 4px 0 var(--text-dark); transition: all 0.2s ease; text-decoration: none; z-index: 1000; }
+        .nav-back:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--text-dark); }
+        .page-content { min-height: 100vh; padding: 100px 20px 80px; }
+        .page-header { font-family: 'Press Start 2P', cursive; font-size: clamp(1.8rem,5vw,3rem); color: var(--accent-pink); text-align: center; margin-bottom: 60px; line-height: 1.4; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; }
+        .feature-card { background-color: white; border: 4px solid var(--border-color); border-radius: 12px; padding: 32px; box-shadow: 6px 6px 0 var(--shadow); transition: all 0.3s ease; }
+        .feature-card:hover { border-color: var(--accent-pink); transform: translateY(-4px); box-shadow: 8px 8px 0 var(--shadow-md); }
+        .feature-card h3 { font-size: 1.5rem; font-weight: 700; color: var(--accent-pink); margin-bottom: 16px; }
+        .feature-card p { font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); }
+        .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px,1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; }
+        .catalog-item { background-color: var(--bg-secondary); border: 3px solid var(--border-color); border-radius: 12px; padding: 24px; transition: all 0.3s ease; cursor: pointer; }
+        .catalog-item:hover { border-color: var(--accent-yellow); transform: scale(1.05); box-shadow: 4px 4px 0 var(--shadow); }
+        .catalog-item h4 { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; color: var(--text-dark); }
+        .catalog-meta { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px; }
+        .mini-stars { display: flex; gap: 4px; margin-top: 12px; }
+        .mini-star { width: 16px; height: 16px; background-color: var(--accent-yellow); clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); }
+        @media (max-width: 768px) {
+            .floating-icon { width: 40px; height: 40px; }
+            .review-card { padding: 28px; }
+            .nav-back { top: 10px; left: 10px; padding: 8px 16px; font-size: 0.9rem; }
+            .badge { bottom: 20px; right: 20px; font-size: 0.6rem; padding: 8px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="landing" class="page active">
+        <section class="hero">
+            <div class="static-bg"></div>
+            <svg class="floating-icon" viewBox="0 0 24 24" fill="none">
+                <rect x="2" y="3" width="20" height="18" rx="2" stroke="#FF6B9D" stroke-width="2" fill="#FFD93D"/>
+                <rect x="6" y="7" width="12" height="10" fill="#FF6B9D"/>
+                <circle cx="8" cy="9" r="1" fill="white"/>
+            </svg>
+            <svg class="floating-icon" viewBox="0 0 24 24" fill="none">
+                <rect x="4" y="2" width="16" height="20" rx="2" stroke="#6BCB77" stroke-width="2" fill="#FFD93D"/>
+                <path d="M8 6h8M8 10h8M8 14h6" stroke="#6BCB77" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <svg class="floating-icon" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="3" width="18" height="18" rx="2" stroke="#FF6B9D" stroke-width="2" fill="#6BCB77"/>
+                <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <svg class="floating-icon" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="#FFD93D" stroke-width="2" fill="#FF6B9D"/>
+                <circle cx="12" cy="12" r="3" fill="white"/>
+                <path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h1 class="logo">RetroLog</h1>
+            <p class="tagline"><em>Every watch. Every playthrough. Every listen. Logged.</em></p>
+            <a href="#" class="cta-button" onclick="showPage('signup'); return false;">Start Logging</a>
+        </section>
+
+        <section class="media-tabs-section">
+            <div class="container">
+                <div class="tabs-container">
+                    <button class="tab active" data-tab="films">Films</button>
+                    <button class="tab" data-tab="games">Games</button>
+                    <button class="tab" data-tab="books">Books</button>
+                    <button class="tab" data-tab="albums">Albums</button>
+                    <button class="tab" data-tab="artists">Artists</button>
+                </div>
+                <div class="tab-content active" id="films">
+                    <h3>The Shawshank Redemption</h3>
+                    <p><strong>Dir:</strong> Frank Darabont | <strong>Year:</strong> 1994</p>
+                    <div class="star-rating"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+                    <p>A timeless tale of hope and friendship that transcends the prison walls. Perfection.</p>
+                </div>
+                <div class="tab-content" id="games">
+                    <h3>Hollow Knight</h3>
+                    <p><strong>Studio:</strong> Team Cherry | <strong>Year:</strong> 2017</p>
+                    <div class="star-rating"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+                    <p>Atmospheric metroidvania with gorgeous hand-drawn art and hauntingly beautiful soundtrack.</p>
+                </div>
+                <div class="tab-content" id="books">
+                    <h3>Dune</h3>
+                    <p><strong>Author:</strong> Frank Herbert | <strong>Year:</strong> 1965</p>
+                    <div class="star-rating"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+                    <p>Epic science fiction masterpiece. World-building at its absolute finest.</p>
+                </div>
+                <div class="tab-content" id="albums">
+                    <h3>Random Access Memories</h3>
+                    <p><strong>Artist:</strong> Daft Punk | <strong>Year:</strong> 2013</p>
+                    <div class="star-rating"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+                    <p>A fusion of electronic and live instrumentation. Pure sonic brilliance.</p>
+                </div>
+                <div class="tab-content" id="artists">
+                    <h3>Kendrick Lamar</h3>
+                    <p><strong>Genre:</strong> Hip-Hop | <strong>Active:</strong> 2003-present</p>
+                    <div class="star-rating"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+                    <p>Storytelling genius with unmatched lyrical depth and social commentary.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="featured-review">
+            <div class="container">
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="avatar"></div>
+                        <div class="review-meta">
+                            <h4>@cinephile_sam</h4>
+                            <p class="media-title">Blade Runner 2049</p>
+                        </div>
+                    </div>
+                    <div class="star-rating"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div>
+                    <p class="review-quote">"A visual masterpiece that honors the original while carving its own identity. Every frame is a painting. Villeneuve is a genius."</p>
+                    <a href="#" class="read-more">Read full review</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-bar">
+            <div class="marquee">
+                <span>12,847 Films Logged</span><span>&middot;</span>
+                <span>8,302 Games Beaten</span><span>&middot;</span>
+                <span>5,190 Albums Rated</span><span>&middot;</span>
+                <span>12,847 Films Logged</span><span>&middot;</span>
+                <span>8,302 Games Beaten</span><span>&middot;</span>
+                <span>5,190 Albums Rated</span><span>&middot;</span>
+            </div>
+        </section>
+
+        <section class="how-it-works">
+            <div class="container">
+                <h2>How It Works</h2>
+                <div class="steps">
+                    <div class="step-card">
+                        <svg class="step-icon" viewBox="0 0 64 64" fill="none">
+                            <circle cx="26" cy="26" r="18" stroke="#2C2416" stroke-width="4" fill="none"/>
+                            <path d="M38 38L54 54" stroke="#2C2416" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                        <h3>1. Search Any Media</h3>
+                        <p>Find films, games, books, albums, or artists from our massive database.</p>
+                    </div>
+                    <div class="step-card">
+                        <svg class="step-icon" viewBox="0 0 64 64" fill="none">
+                            <path d="M32 8L37 26H56L41 38L46 56L32 44L18 56L23 38L8 26H27L32 8Z" fill="#2C2416"/>
+                        </svg>
+                        <h3>2. Rate &amp; Review</h3>
+                        <p>Give it stars, write your thoughts, and share what you loved (or didn't).</p>
+                    </div>
+                    <div class="step-card">
+                        <svg class="step-icon" viewBox="0 0 64 64" fill="none">
+                            <rect x="8" y="8" width="48" height="48" rx="4" stroke="#2C2416" stroke-width="4" fill="none"/>
+                            <path d="M20 20h24M20 32h24M20 44h16" stroke="#2C2416" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                        <h3>3. Build Your Collection</h3>
+                        <p>Create lists, track stats, and showcase your unique taste to the world.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="activity-feed">
+            <div class="container">
+                <h2>Recent Activity</h2>
+                <div class="feed-container">
+                    <div class="activity-item"><div class="activity-avatar"></div><div class="activity-text"><p><strong>@pixel_warrior</strong> gave Hollow Knight 5 stars</p><p class="activity-time">2 minutes ago</p></div></div>
+                    <div class="activity-item"><div class="activity-avatar"></div><div class="activity-text"><p><strong>@bookworm_ella</strong> finished reading Dune</p><p class="activity-time">14 minutes ago</p></div></div>
+                    <div class="activity-item"><div class="activity-avatar"></div><div class="activity-text"><p><strong>@vinyl_vibes</strong> added Kendrick Lamar to favorites</p><p class="activity-time">32 minutes ago</p></div></div>
+                    <div class="activity-item"><div class="activity-avatar"></div><div class="activity-text"><p><strong>@retro_gamer</strong> logged Celeste - 4 stars</p><p class="activity-time">1 hour ago</p></div></div>
+                    <div class="activity-item"><div class="activity-avatar"></div><div class="activity-text"><p><strong>@film_fanatic</strong> reviewed The Grand Budapest Hotel</p><p class="activity-time">2 hours ago</p></div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-footer">
+            <div class="container">
+                <h2>Your taste. Your archive.</h2>
+                <div class="footer-buttons">
+                    <a href="#" class="footer-btn filled" onclick="showPage('signup'); return false;">Sign Up Free</a>
+                    <a href="#" class="footer-btn outlined" onclick="showPage('browse'); return false;">Browse Public Logs</a>
+                </div>
+                <div class="badge">Est.<br>2026</div>
+            </div>
+        </section>
+    </div>
+
+    <div id="signup" class="page">
+        <a href="#" class="nav-back" onclick="showPage('landing'); return false;">Back</a>
+        <div class="page-content">
+            <h2 class="page-header">Start Your RetroLog Journey</h2>
+            <div class="container">
+                <div class="feature-grid">
+                    <div class="feature-card"><h3>Track Everything</h3><p>Log films, games, books, albums, and artists all in one place.</p></div>
+                    <div class="feature-card"><h3>Rate &amp; Review</h3><p>Give star ratings and write detailed reviews. Share your thoughts with the community.</p></div>
+                    <div class="feature-card"><h3>Custom Lists</h3><p>Create curated collections. Favorites, to-watch lists, themed playlists.</p></div>
+                    <div class="feature-card"><h3>Visualize Stats</h3><p>See your watching patterns, genre breakdowns, and yearly summaries.</p></div>
+                    <div class="feature-card"><h3>Connect &amp; Discover</h3><p>Follow friends, discover new favorites through their logs.</p></div>
+                    <div class="feature-card"><h3>Personalize</h3><p>Customize your profile with themes, badges, and showcases.</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="browse" class="page">
+        <a href="#" class="nav-back" onclick="showPage('landing'); return false;">Back</a>
+        <div class="page-content" style="background-color: var(--bg-secondary);">
+            <h2 class="page-header">Explore the Community</h2>
+            <div class="container">
+                <div class="catalog-grid">
+                    <div class="catalog-item"><h4>Parasite</h4><p class="catalog-meta">2019 - Bong Joon-ho</p><p>A masterclass in social commentary wrapped in thriller perfection.</p><div class="mini-stars"><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div></div></div>
+                    <div class="catalog-item"><h4>The Last of Us</h4><p class="catalog-meta">2013 - Naughty Dog</p><p>Emotionally devastating narrative that redefined video game storytelling.</p><div class="mini-stars"><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div></div></div>
+                    <div class="catalog-item"><h4>1984</h4><p class="catalog-meta">1949 - George Orwell</p><p>Chillingly prescient dystopian classic that remains deeply relevant.</p><div class="mini-stars"><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div></div></div>
+                    <div class="catalog-item"><h4>To Pimp a Butterfly</h4><p class="catalog-meta">2015 - Kendrick Lamar</p><p>A transformative hip-hop album blending jazz, funk, and powerful social commentary.</p><div class="mini-stars"><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div></div></div>
+                    <div class="catalog-item"><h4>Spirited Away</h4><p class="catalog-meta">2001 - Hayao Miyazaki</p><p>Studio Ghibli magic at its finest. Visually stunning and deeply moving.</p><div class="mini-stars"><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div></div></div>
+                    <div class="catalog-item"><h4>Elden Ring</h4><p class="catalog-meta">2022 - FromSoftware</p><p>Dark Souls meets open world. Punishing, rewarding, absolutely brilliant.</p><div class="mini-stars"><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div></div></div>
+                    <div class="catalog-item"><h4>The Midnight Gospel</h4><p class="catalog-meta">2020 - Netflix</p><p>Psychedelic animated journey exploring philosophy and existence.</p><div class="mini-stars"><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div></div></div>
+                    <div class="catalog-item"><h4>Blood Meridian</h4><p class="catalog-meta">1985 - Cormac McCarthy</p><p>Brutal, biblical western prose. Not for the faint of heart but utterly unforgettable.</p><div class="mini-stars"><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div><div class="mini-star"></div></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.dataset.tab;
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(target).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

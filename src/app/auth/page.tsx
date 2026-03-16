@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -42,7 +42,7 @@ function FloatingMediaCards() {
   )
 }
 
-export default function AuthPage() {
+function AuthPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
@@ -72,13 +72,18 @@ export default function AuthPage() {
   const passColor     = ['bg-border', 'bg-accent-pink', 'bg-accent-yellow', 'bg-accent-yellow', 'bg-accent-mint'][passStrength]
   const passLabel     = ['', 'Weak', 'Fair', 'Good', 'Strong'][passStrength]
 
-  const redirectTo = `${window.location.origin}/auth/callback`
+  const getRedirectTo = () => {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/auth/callback`
+    }
+    return 'https://retro-log.vercel.app/auth/callback'
+  }
 
   const handleOAuth = async (provider: 'google' | 'github') => {
     setError(''); setSuccess('')
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo },
+      options: { redirectTo: getRedirectTo() },
     })
     if (error) setError(error.message)
   }
@@ -99,7 +104,7 @@ export default function AuthPage() {
     if (!email) { setError('Please enter your email address.'); return }
     if (!emailValid) { setError('Please enter a valid email address.'); return }
     setLoading(true)
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: getRedirectTo() })
     setLoading(false)
     if (error) { setError(error.message); return }
     setSuccess('Password reset email sent! Check your inbox.')
@@ -143,6 +148,7 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-bg-primary">
       <div className="scanlines fixed inset-0 pointer-events-none z-50 opacity-20" />
+
 
       {/* ── LEFT BRANDING PANEL ── */}
       <aside className="lg:w-[48%] bg-dark relative overflow-hidden flex flex-col justify-center items-center p-8 lg:p-16 min-h-[52vh] lg:min-h-screen">
@@ -509,5 +515,13 @@ export default function AuthPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense>
+      <AuthPageInner />
+    </Suspense>
   )
 }

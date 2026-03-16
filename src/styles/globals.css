@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Press+Start+2P&family=Space+Mono:wght@400;700&display=swap');
 @import './tokens.css';
 @tailwind base;
 @tailwind components;
@@ -8,7 +9,7 @@
     scroll-behavior: smooth;
   }
   body {
-    font-family: 'Kalam', cursive;
+    font-family: 'DM Sans', sans-serif;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
@@ -21,13 +22,13 @@
 
 @layer utilities {
   .font-display {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', monospace;
   }
   .font-mono-custom {
     font-family: 'Space Mono', monospace;
   }
   .font-body {
-    font-family: 'Kalam', cursive;
+    font-family: 'DM Sans', sans-serif;
   }
 
   .text-pink { color: var(--accent-pink); }

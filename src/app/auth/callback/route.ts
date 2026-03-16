@@ -16,10 +16,18 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      // Use forwarded host for Vercel/proxy deployments
+      const forwardedHost = request.headers.get('x-forwarded-host')
+      const isLocal = process.env.NODE_ENV === 'development'
+      if (!isLocal && forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+      }
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
 
-  // Auth error — redirect back to auth page with error
-  return NextResponse.redirect(`${origin}/auth?error=auth_callback_failed`)
+  // No code param — the implicit flow sends tokens as hash fragments
+  // which aren't visible to the server. Redirect to onboarding and let
+  // the client-side AuthListener handle the session.
+  return NextResponse.redirect(`${origin}/onboarding`)
 }

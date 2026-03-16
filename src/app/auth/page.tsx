@@ -1,6 +1,8 @@
 'use client'
-import React, { useState } from 'react'
+import React, { Suspense, useState } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import {
   FilmIcon, GamepadIcon, BookIcon, VinylIcon, StarFilledIcon,
   GoogleIcon, AppleIcon, GitHubIcon, MagicLinkIcon,
@@ -9,6 +11,7 @@ import {
 } from '@/components/icons'
 
 type AuthMode = 'login' | 'signup'
+type Provider = 'google' | 'apple' | 'github'
 
 /* ── Floating media cards for the branding panel ── */
 function FloatingMediaCards() {
@@ -40,7 +43,18 @@ function FloatingMediaCards() {
   )
 }
 
-export default function AuthPage() {
+export default function AuthPageWrapper() {
+  return (
+    <Suspense>
+      <AuthPage />
+    </Suspense>
+  )
+}
+
+function AuthPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   const [mode, setMode]                       = useState<AuthMode>('login')
   const [email, setEmail]                     = useState('')
   const [password, setPassword]               = useState('')
@@ -50,7 +64,10 @@ export default function AuthPage() {
   const [agreeTerms, setAgreeTerms]           = useState(false)
   const [showPassword, setShowPassword]       = useState(false)
   const [loading, setLoading]                 = useState(false)
-  const [error, setError]                     = useState('')
+  const [oauthLoading, setOauthLoading]       = useState<Provider | null>(null)
+  const [magicLinkSent, setMagicLinkSent]     = useState(false)
+  const [forgotMode, setForgotMode]           = useState(false)
+  const [error, setError]                     = useState(searchParams.get('error') === 'auth_callback_failed' ? 'Authentication failed. Please try again.' : '')
   const [success, setSuccess]                 = useState('')
 
   const emailValid    = email.includes('@') && email.includes('.')
@@ -59,20 +76,113 @@ export default function AuthPage() {
   const passColor     = ['bg-border', 'bg-accent-pink', 'bg-accent-yellow', 'bg-accent-yellow', 'bg-accent-mint'][passStrength]
   const passLabel     = ['', 'Weak', 'Fair', 'Good', 'Strong'][passStrength]
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const supabase = createClient()
+
+  /* ── OAuth (Google / Apple / GitHub) ── */
+  const handleOAuth = async (provider: Provider) => {
+    setError(''); setSuccess('')
+    setOauthLoading(provider)
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+    if (error) {
+      setError(error.message)
+      setOauthLoading(null)
+    }
+  }
+
+  /* ── Magic Link ── */
+  const handleMagicLink = async () => {
+    setError(''); setSuccess('')
+    if (!email || !emailValid) {
+      setError('Please enter a valid email address first.')
+      return
+    }
+    setLoading(true)
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+    setLoading(false)
+    if (error) {
+      setError(error.message)
+    } else {
+      setMagicLinkSent(true)
+      setSuccess('Magic link sent! Check your email inbox.')
+    }
+  }
+
+  /* ── Forgot Password ── */
+  const handleForgotPassword = async () => {
+    setError(''); setSuccess('')
+    if (!email || !emailValid) {
+      setError('Please enter your email address above first.')
+      return
+    }
+    setLoading(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    })
+    setLoading(false)
+    if (error) {
+      setError(error.message)
+    } else {
+      setForgotMode(true)
+      setSuccess('Password reset email sent! Check your inbox.')
+    }
+  }
+
+  /* ── Email/Password submit ── */
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(''); setSuccess('')
     if (!email || !password) { setError('Please fill in all required fields.'); return }
     if (!emailValid) { setError('Please enter a valid email address.'); return }
-    if (mode === 'signup' && !usernameValid) { setError('Please choose a valid username (3+ chars, lowercase).'); return }
-    if (mode === 'signup' && password.length < 8) { setError('Password must be at least 8 characters.'); return }
-    if (mode === 'signup' && password !== confirmPassword) { setError('Passwords do not match.'); return }
-    if (mode === 'signup' && !agreeTerms) { setError('Please agree to the terms to continue.'); return }
-    setLoading(true)
-    setTimeout(() => {
+
+    if (mode === 'signup') {
+      if (!usernameValid) { setError('Please choose a valid username (3+ chars, lowercase).'); return }
+      if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
+      if (password !== confirmPassword) { setError('Passwords do not match.'); return }
+      if (!agreeTerms) { setError('Please agree to the terms to continue.'); return }
+
+      setLoading(true)
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            username,
+            display_name: username,
+          },
+        },
+      })
       setLoading(false)
-      setSuccess(mode === 'login' ? 'Welcome back to RetroLog!' : 'Account created! Check your email to verify.')
-    }, 1500)
+
+      if (error) {
+        setError(error.message)
+      } else {
+        setSuccess('Account created! Check your email to verify.')
+      }
+    } else {
+      setLoading(true)
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      setLoading(false)
+
+      if (error) {
+        setError(error.message)
+      } else {
+        router.push('/dashboard')
+      }
+    }
   }
 
   return (
@@ -199,7 +309,7 @@ export default function AuthPage() {
             {(['login', 'signup'] as AuthMode[]).map(m => (
               <button
                 key={m}
-                onClick={() => { setMode(m); setError(''); setSuccess('') }}
+                onClick={() => { setMode(m); setError(''); setSuccess(''); setForgotMode(false); setMagicLinkSent(false) }}
                 className={`flex-1 py-3 rounded-lg font-hand font-bold text-base transition-all duration-300 ${
                   mode === m
                     ? 'bg-white shadow-soft text-txt-primary border border-border'
@@ -213,20 +323,40 @@ export default function AuthPage() {
 
           {/* Social auth */}
           <div className="space-y-3 mb-5">
-            {[
-              { Icon: GoogleIcon, label: 'Continue with Google', cls: 'bg-white text-txt-primary border-border hover:border-accent-pink hover:shadow-soft' },
-              { Icon: AppleIcon, label: 'Continue with Apple', cls: 'bg-dark text-white border-dark hover:opacity-90' },
-              { Icon: GitHubIcon, label: 'Continue with GitHub', cls: 'bg-[#24292e] text-white border-[#24292e] hover:bg-[#2f363d]' },
-            ].map(({ Icon, label, cls }, i) => (
-              <button key={i} className={`w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 font-hand font-bold text-sm transition-all duration-200 hover:-translate-y-0.5 ${cls}`}>
-                <Icon className="w-5 h-5" />{label}
+            {([
+              { provider: 'google' as Provider, Icon: GoogleIcon, label: 'Continue with Google', cls: 'bg-white text-txt-primary border-border hover:border-accent-pink hover:shadow-soft' },
+              { provider: 'apple' as Provider, Icon: AppleIcon, label: 'Continue with Apple', cls: 'bg-dark text-white border-dark hover:opacity-90' },
+              { provider: 'github' as Provider, Icon: GitHubIcon, label: 'Continue with GitHub', cls: 'bg-[#24292e] text-white border-[#24292e] hover:bg-[#2f363d]' },
+            ]).map(({ provider, Icon, label, cls }) => (
+              <button
+                key={provider}
+                onClick={() => handleOAuth(provider)}
+                disabled={oauthLoading !== null}
+                className={`w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 font-hand font-bold text-sm transition-all duration-200 hover:-translate-y-0.5 ${cls} ${oauthLoading === provider ? 'opacity-70 cursor-wait' : ''}`}
+              >
+                {oauthLoading === provider ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity=".25" />
+                      <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
+                    Connecting...
+                  </>
+                ) : (
+                  <><Icon className="w-5 h-5" />{label}</>
+                )}
               </button>
             ))}
           </div>
 
           {/* Magic link */}
-          <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-accent-blue/40 text-accent-blue font-hand font-bold text-sm hover:border-accent-blue hover:bg-accent-blue/5 transition-all mb-5">
-            <MagicLinkIcon className="w-4 h-4" />Send Magic Link
+          <button
+            onClick={handleMagicLink}
+            disabled={loading || magicLinkSent}
+            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-accent-blue/40 text-accent-blue font-hand font-bold text-sm hover:border-accent-blue hover:bg-accent-blue/5 transition-all mb-5 ${magicLinkSent ? 'opacity-60 cursor-default' : ''}`}
+          >
+            <MagicLinkIcon className="w-4 h-4" />
+            {magicLinkSent ? 'Magic Link Sent!' : 'Send Magic Link'}
           </button>
 
           <div className="flex items-center gap-3 mb-5">
@@ -294,7 +424,9 @@ export default function AuthPage() {
               <div className="flex justify-between items-center mb-1">
                 <label className="font-hand text-sm font-bold text-txt-primary">Password</label>
                 {mode === 'login' && (
-                  <button type="button" className="font-hand text-xs text-accent-pink hover:underline">Forgot password?</button>
+                  <button type="button" onClick={handleForgotPassword} disabled={loading || forgotMode} className={`font-hand text-xs text-accent-pink hover:underline ${forgotMode ? 'opacity-60' : ''}`}>
+                    {forgotMode ? 'Email sent!' : 'Forgot password?'}
+                  </button>
                 )}
               </div>
               <div className="relative">

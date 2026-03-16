@@ -84,7 +84,10 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        // Redirect to /auth (this client-side page) so the Supabase JS client
+        // can detect the hash-fragment tokens. The AuthListener component
+        // will then redirect to /onboarding once the session is established.
+        redirectTo: `${window.location.origin}/auth`,
       },
     })
     if (error) {
@@ -104,7 +107,7 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth`,
       },
     })
     setLoading(false)
@@ -154,7 +157,7 @@ function AuthPage() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth`,
           data: {
             username,
             display_name: username,

@@ -1,9 +1,11 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import {
   FilmIcon, GamepadIcon, BookIcon, VinylIcon, StarFilledIcon,
-  GoogleIcon, AppleIcon, GitHubIcon, MagicLinkIcon,
+  GoogleIcon, GitHubIcon, MagicLinkIcon,
   EyeIcon, CheckIcon, XIcon, HeartFilledIcon, PersonIcon,
   HeadphonesIcon, SparklesIcon,
 } from '@/components/icons'
@@ -41,6 +43,10 @@ function FloatingMediaCards() {
 }
 
 export default function AuthPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const supabase = createClient()
+
   const [mode, setMode]                       = useState<AuthMode>('login')
   const [email, setEmail]                     = useState('')
   const [password, setPassword]               = useState('')
@@ -52,6 +58,13 @@ export default function AuthPage() {
   const [loading, setLoading]                 = useState(false)
   const [error, setError]                     = useState('')
   const [success, setSuccess]                 = useState('')
+  const [forgotPassword, setForgotPassword]   = useState(false)
+
+  useEffect(() => {
+    const errorParam = searchParams.get('error')
+    if (errorParam === 'auth') setError('Authentication failed. Please try again.')
+    if (errorParam === 'confirm') setError('Email confirmation failed. Please try again.')
+  }, [searchParams])
 
   const emailValid    = email.includes('@') && email.includes('.')
   const usernameValid = username.length >= 3 && /^[a-z0-9_]+$/.test(username)
@@ -59,20 +72,72 @@ export default function AuthPage() {
   const passColor     = ['bg-border', 'bg-accent-pink', 'bg-accent-yellow', 'bg-accent-yellow', 'bg-accent-mint'][passStrength]
   const passLabel     = ['', 'Weak', 'Fair', 'Good', 'Strong'][passStrength]
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const redirectTo = `${window.location.origin}/auth/callback`
+
+  const handleOAuth = async (provider: 'google' | 'github') => {
+    setError(''); setSuccess('')
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo },
+    })
+    if (error) setError(error.message)
+  }
+
+  const handleMagicLink = async () => {
+    setError(''); setSuccess('')
+    if (!email) { setError('Please enter your email address.'); return }
+    if (!emailValid) { setError('Please enter a valid email address.'); return }
+    setLoading(true)
+    const { error } = await supabase.auth.signInWithOtp({ email })
+    setLoading(false)
+    if (error) { setError(error.message); return }
+    setSuccess('Magic link sent! Check your email inbox.')
+  }
+
+  const handleForgotPassword = async () => {
+    setError(''); setSuccess('')
+    if (!email) { setError('Please enter your email address.'); return }
+    if (!emailValid) { setError('Please enter a valid email address.'); return }
+    setLoading(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
+    setLoading(false)
+    if (error) { setError(error.message); return }
+    setSuccess('Password reset email sent! Check your inbox.')
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(''); setSuccess('')
+
+    if (forgotPassword) {
+      await handleForgotPassword()
+      return
+    }
+
     if (!email || !password) { setError('Please fill in all required fields.'); return }
     if (!emailValid) { setError('Please enter a valid email address.'); return }
     if (mode === 'signup' && !usernameValid) { setError('Please choose a valid username (3+ chars, lowercase).'); return }
     if (mode === 'signup' && password.length < 8) { setError('Password must be at least 8 characters.'); return }
     if (mode === 'signup' && password !== confirmPassword) { setError('Passwords do not match.'); return }
     if (mode === 'signup' && !agreeTerms) { setError('Please agree to the terms to continue.'); return }
+
     setLoading(true)
-    setTimeout(() => {
+
+    if (mode === 'login') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
       setLoading(false)
-      setSuccess(mode === 'login' ? 'Welcome back to RetroLog!' : 'Account created! Check your email to verify.')
-    }, 1500)
+      if (error) { setError(error.message); return }
+      router.push('/')
+    } else {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { username } },
+      })
+      setLoading(false)
+      if (error) { setError(error.message); return }
+      setSuccess('Account created! Check your email to verify.')
+    }
   }
 
   return (
@@ -187,58 +252,69 @@ export default function AuthPage() {
           <div className="text-center mb-6">
             <SparklesIcon className="w-6 h-6 text-accent-yellow mx-auto mb-2" />
             <p className="font-hand text-lg text-txt-primary font-bold">
-              {mode === 'login' ? 'Welcome back!' : 'Join the archive'}
+              {forgotPassword ? 'Reset your password' : mode === 'login' ? 'Welcome back!' : 'Join the archive'}
             </p>
             <p className="font-hand text-sm text-txt-secondary">
-              {mode === 'login' ? 'Your media journal awaits.' : 'Start logging your taste today.'}
+              {forgotPassword ? 'Enter your email and we\'ll send a reset link.' : mode === 'login' ? 'Your media journal awaits.' : 'Start logging your taste today.'}
             </p>
           </div>
 
-          {/* Mode toggle */}
-          <div className="flex bg-bg-secondary rounded-xl p-1 mb-7 border border-border">
-            {(['login', 'signup'] as AuthMode[]).map(m => (
+          {!forgotPassword && (
+            <>
+              {/* Mode toggle */}
+              <div className="flex bg-bg-secondary rounded-xl p-1 mb-7 border border-border">
+                {(['login', 'signup'] as AuthMode[]).map(m => (
+                  <button
+                    key={m}
+                    onClick={() => { setMode(m); setError(''); setSuccess('') }}
+                    className={`flex-1 py-3 rounded-lg font-hand font-bold text-base transition-all duration-300 ${
+                      mode === m
+                        ? 'bg-white shadow-soft text-txt-primary border border-border'
+                        : 'text-txt-secondary hover:text-txt-primary'
+                    }`}
+                  >
+                    {m === 'login' ? 'Log In' : 'Sign Up'}
+                  </button>
+                ))}
+              </div>
+
+              {/* Social auth */}
+              <div className="space-y-3 mb-5">
+                {[
+                  { Icon: GoogleIcon, label: 'Continue with Google', cls: 'bg-white text-txt-primary border-border hover:border-accent-pink hover:shadow-soft', provider: 'google' as const },
+                  { Icon: GitHubIcon, label: 'Continue with GitHub', cls: 'bg-[#24292e] text-white border-[#24292e] hover:bg-[#2f363d]', provider: 'github' as const },
+                ].map(({ Icon, label, cls, provider }, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleOAuth(provider)}
+                    className={`w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 font-hand font-bold text-sm transition-all duration-200 hover:-translate-y-0.5 ${cls}`}
+                  >
+                    <Icon className="w-5 h-5" />{label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Magic link */}
               <button
-                key={m}
-                onClick={() => { setMode(m); setError(''); setSuccess('') }}
-                className={`flex-1 py-3 rounded-lg font-hand font-bold text-base transition-all duration-300 ${
-                  mode === m
-                    ? 'bg-white shadow-soft text-txt-primary border border-border'
-                    : 'text-txt-secondary hover:text-txt-primary'
-                }`}
+                onClick={handleMagicLink}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-accent-blue/40 text-accent-blue font-hand font-bold text-sm hover:border-accent-blue hover:bg-accent-blue/5 transition-all mb-5"
               >
-                {m === 'login' ? 'Log In' : 'Sign Up'}
+                <MagicLinkIcon className="w-4 h-4" />Send Magic Link
               </button>
-            ))}
-          </div>
 
-          {/* Social auth */}
-          <div className="space-y-3 mb-5">
-            {[
-              { Icon: GoogleIcon, label: 'Continue with Google', cls: 'bg-white text-txt-primary border-border hover:border-accent-pink hover:shadow-soft' },
-              { Icon: AppleIcon, label: 'Continue with Apple', cls: 'bg-dark text-white border-dark hover:opacity-90' },
-              { Icon: GitHubIcon, label: 'Continue with GitHub', cls: 'bg-[#24292e] text-white border-[#24292e] hover:bg-[#2f363d]' },
-            ].map(({ Icon, label, cls }, i) => (
-              <button key={i} className={`w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 font-hand font-bold text-sm transition-all duration-200 hover:-translate-y-0.5 ${cls}`}>
-                <Icon className="w-5 h-5" />{label}
-              </button>
-            ))}
-          </div>
-
-          {/* Magic link */}
-          <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-accent-blue/40 text-accent-blue font-hand font-bold text-sm hover:border-accent-blue hover:bg-accent-blue/5 transition-all mb-5">
-            <MagicLinkIcon className="w-4 h-4" />Send Magic Link
-          </button>
-
-          <div className="flex items-center gap-3 mb-5">
-            <div className="flex-1 h-px bg-border" />
-            <span className="font-mono text-xs text-txt-secondary">or use email</span>
-            <div className="flex-1 h-px bg-border" />
-          </div>
+              <div className="flex items-center gap-3 mb-5">
+                <div className="flex-1 h-px bg-border" />
+                <span className="font-mono text-xs text-txt-secondary">or use email</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+            </>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            {mode === 'signup' && (
+            {mode === 'signup' && !forgotPassword && (
               <div className="fade-in-up">
                 <label className="font-hand text-sm font-bold text-txt-primary mb-1 block">Username</label>
                 <div className="relative">
@@ -290,87 +366,91 @@ export default function AuthPage() {
               )}
             </div>
 
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="font-hand text-sm font-bold text-txt-primary">Password</label>
-                {mode === 'login' && (
-                  <button type="button" className="font-hand text-xs text-accent-pink hover:underline">Forgot password?</button>
-                )}
-              </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="Min. 8 characters"
-                  className="input-field pr-10"
-                  aria-label="Password"
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-txt-secondary hover:text-txt-primary transition-colors">
-                  <EyeIcon className="w-4 h-4" />
-                </button>
-              </div>
-              {password && (
-                <div className="mt-2">
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4].map(i => (
-                      <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${passStrength >= i ? passColor : 'bg-border'}`} />
-                    ))}
+            {!forgotPassword && (
+              <>
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="font-hand text-sm font-bold text-txt-primary">Password</label>
+                    {mode === 'login' && (
+                      <button type="button" onClick={() => { setForgotPassword(true); setError(''); setSuccess('') }} className="font-hand text-xs text-accent-pink hover:underline">Forgot password?</button>
+                    )}
                   </div>
-                  {mode === 'signup' && (
-                    <p className={`font-mono text-[10px] mt-1 ${passStrength >= 3 ? 'text-accent-mint' : passStrength >= 2 ? 'text-accent-yellow' : 'text-accent-pink'}`}>
-                      {passLabel}
-                    </p>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="Min. 8 characters"
+                      className="input-field pr-10"
+                      aria-label="Password"
+                      autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                    />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-txt-secondary hover:text-txt-primary transition-colors">
+                      <EyeIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                  {password && (
+                    <div className="mt-2">
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4].map(i => (
+                          <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${passStrength >= i ? passColor : 'bg-border'}`} />
+                        ))}
+                      </div>
+                      {mode === 'signup' && (
+                        <p className={`font-mono text-[10px] mt-1 ${passStrength >= 3 ? 'text-accent-mint' : passStrength >= 2 ? 'text-accent-yellow' : 'text-accent-pink'}`}>
+                          {passLabel}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
 
-            {mode === 'signup' && (
-              <div className="fade-in-up">
-                <label className="font-hand text-sm font-bold text-txt-primary mb-1 block">Confirm Password</label>
-                <div className="relative">
-                  <input
-                    type="password" value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    placeholder="Repeat your password"
-                    className="input-field pr-10"
-                    aria-label="Confirm password"
-                    autoComplete="new-password"
-                  />
-                  {confirmPassword && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2">
-                      {password === confirmPassword
-                        ? <CheckIcon className="w-4 h-4 text-accent-mint" />
-                        : <XIcon className="w-4 h-4 text-accent-pink" />}
-                    </span>
-                  )}
-                </div>
-                {confirmPassword && password !== confirmPassword && (
-                  <p className="font-hand text-xs text-accent-pink mt-1">Passwords do not match</p>
+                {mode === 'signup' && (
+                  <div className="fade-in-up">
+                    <label className="font-hand text-sm font-bold text-txt-primary mb-1 block">Confirm Password</label>
+                    <div className="relative">
+                      <input
+                        type="password" value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        placeholder="Repeat your password"
+                        className="input-field pr-10"
+                        aria-label="Confirm password"
+                        autoComplete="new-password"
+                      />
+                      {confirmPassword && (
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {password === confirmPassword
+                            ? <CheckIcon className="w-4 h-4 text-accent-mint" />
+                            : <XIcon className="w-4 h-4 text-accent-pink" />}
+                        </span>
+                      )}
+                    </div>
+                    {confirmPassword && password !== confirmPassword && (
+                      <p className="font-hand text-xs text-accent-pink mt-1">Passwords do not match</p>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
 
-            <div className="flex items-start gap-2.5">
-              <button
-                type="button"
-                onClick={() => mode === 'login' ? setRememberMe(!rememberMe) : setAgreeTerms(!agreeTerms)}
-                className={`w-5 h-5 mt-0.5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-all ${
-                  (mode === 'login' ? rememberMe : agreeTerms) ? 'bg-accent-pink border-accent-pink' : 'border-border hover:border-accent-pink'
-                }`}
-                aria-label={mode === 'login' ? 'Remember me' : 'Agree to terms'}
-              >
-                {(mode === 'login' ? rememberMe : agreeTerms) && <CheckIcon className="w-3 h-3 text-white" />}
-              </button>
-              <span className="font-hand text-sm text-txt-secondary leading-snug">
-                {mode === 'login'
-                  ? 'Remember me on this device'
-                  : (<>I agree to the <a href="#" className="text-accent-pink hover:underline">Terms of Service</a> and <a href="#" className="text-accent-pink hover:underline">Privacy Policy</a></>)
-                }
-              </span>
-            </div>
+                <div className="flex items-start gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => mode === 'login' ? setRememberMe(!rememberMe) : setAgreeTerms(!agreeTerms)}
+                    className={`w-5 h-5 mt-0.5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-all ${
+                      (mode === 'login' ? rememberMe : agreeTerms) ? 'bg-accent-pink border-accent-pink' : 'border-border hover:border-accent-pink'
+                    }`}
+                    aria-label={mode === 'login' ? 'Remember me' : 'Agree to terms'}
+                  >
+                    {(mode === 'login' ? rememberMe : agreeTerms) && <CheckIcon className="w-3 h-3 text-white" />}
+                  </button>
+                  <span className="font-hand text-sm text-txt-secondary leading-snug">
+                    {mode === 'login'
+                      ? 'Remember me on this device'
+                      : (<>I agree to the <a href="#" className="text-accent-pink hover:underline">Terms of Service</a> and <a href="#" className="text-accent-pink hover:underline">Privacy Policy</a></>)
+                    }
+                  </span>
+                </div>
+              </>
+            )}
 
             {/* Error state */}
             {error && (
@@ -401,17 +481,19 @@ export default function AuthPage() {
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity=".25" />
                     <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                   </svg>
-                  {mode === 'login' ? 'Logging in...' : 'Creating account...'}
+                  {forgotPassword ? 'Sending reset link...' : mode === 'login' ? 'Logging in...' : 'Creating account...'}
                 </>
               ) : (
-                mode === 'login' ? 'Log In to RetroLog' : 'Create My Archive'
+                forgotPassword ? 'Send Reset Link' : mode === 'login' ? 'Log In to RetroLog' : 'Create My Archive'
               )}
             </button>
           </form>
 
           {/* Switch mode prompt */}
           <p className="text-center font-hand text-sm text-txt-secondary mt-5">
-            {mode === 'login' ? (
+            {forgotPassword ? (
+              <button onClick={() => { setForgotPassword(false); setError(''); setSuccess('') }} className="text-accent-pink font-bold hover:underline">Back to login</button>
+            ) : mode === 'login' ? (
               <>New to RetroLog? <button onClick={() => { setMode('signup'); setError(''); setSuccess('') }} className="text-accent-pink font-bold hover:underline">Create an account</button></>
             ) : (
               <>Already have an account? <button onClick={() => { setMode('login'); setError(''); setSuccess('') }} className="text-accent-pink font-bold hover:underline">Log in</button></>

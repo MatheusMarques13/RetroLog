@@ -1,5 +1,5 @@
 'use client'
-import React, { Suspense, useState } from 'react'
+import React, { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -54,6 +54,21 @@ export default function AuthPageWrapper() {
 function AuthPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const supabase = createClient()
+
+  // If user is already logged in (e.g. after OAuth redirect), send them to onboarding
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        router.push('/onboarding')
+      }
+    })
+    // Also check on mount
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) router.push('/onboarding')
+    })
+    return () => subscription.unsubscribe()
+  }, [router, supabase.auth])
 
   const [mode, setMode]                       = useState<AuthMode>('login')
   const [email, setEmail]                     = useState('')
@@ -75,8 +90,6 @@ function AuthPage() {
   const passStrength  = password.length >= 12 ? 4 : password.length >= 8 ? 3 : password.length >= 5 ? 2 : password.length > 0 ? 1 : 0
   const passColor     = ['bg-border', 'bg-accent-pink', 'bg-accent-yellow', 'bg-accent-yellow', 'bg-accent-mint'][passStrength]
   const passLabel     = ['', 'Weak', 'Fair', 'Good', 'Strong'][passStrength]
-
-  const supabase = createClient()
 
   /* ── OAuth (Google / Apple / GitHub) ── */
   const handleOAuth = async (provider: Provider) => {

@@ -30,32 +30,31 @@ export async function updateSession(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  const path = request.nextUrl.pathname
+  const pathname = request.nextUrl.pathname
 
-  // Protected routes — redirect unauthenticated users to /auth
-  const protectedPaths = ['/dashboard', '/onboarding']
-  if (!user && protectedPaths.some(p => path.startsWith(p))) {
+  // Authenticated user on landing or auth page → redirect to profile or setup
+  if (user && (pathname === '/' || pathname === '/auth')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .single()
+
     const url = request.nextUrl.clone()
-    url.pathname = '/auth'
+    if (profile) {
+      url.pathname = `/profile/${profile.username}`
+    } else {
+      url.pathname = '/profile/setup'
+    }
     return NextResponse.redirect(url)
   }
 
-  // If logged in, check onboarding status
-  if (user) {
-    const onboardingComplete = user.user_metadata?.onboarding_complete === true
-
-    // User hasn't completed onboarding — redirect to /onboarding
-    // (except if they're already there, on /auth, or on the callback)
-    if (!onboardingComplete && !path.startsWith('/onboarding') && !path.startsWith('/auth')) {
+  // Unauthenticated user on protected routes → redirect to auth
+  if (!user && (pathname.startsWith('/profile/setup') || pathname.startsWith('/profile/'))) {
+    // Allow public profile viewing for /profile/[username] but protect /profile/setup
+    if (pathname.startsWith('/profile/setup')) {
       const url = request.nextUrl.clone()
-      url.pathname = '/onboarding'
-      return NextResponse.redirect(url)
-    }
-
-    // User already completed onboarding — skip /onboarding, go to landing
-    if (onboardingComplete && path.startsWith('/onboarding')) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/'
+      url.pathname = '/auth'
       return NextResponse.redirect(url)
     }
   }

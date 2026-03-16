@@ -81,15 +81,10 @@ function AuthPage() {
   const handleOAuth = async (provider: Provider) => {
     setError(''); setSuccess('')
     setOauthLoading(provider)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        // Redirect to /auth (this client-side page) so the Supabase JS client
-        // can detect the hash-fragment tokens. The AuthListener component
-        // will then redirect to /onboarding once the session is established.
-        redirectTo: `${window.location.origin}/auth`,
-      },
-    })
+    // Don't set redirectTo — Supabase will use the Site URL which is always
+    // whitelisted. The AuthListener in root layout detects the ?code param
+    // on whatever page the user lands and exchanges it for a session.
+    const { error } = await supabase.auth.signInWithOAuth({ provider })
     if (error) {
       setError(error.message)
       setOauthLoading(null)

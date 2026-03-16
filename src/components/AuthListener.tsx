@@ -1,12 +1,14 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useEffect, useRef } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function AuthListener() {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const exchangingRef = useRef(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -19,15 +21,31 @@ export default function AuthListener() {
       }
     }
 
-    // 1. Check if user already has a session (e.g. page refresh, redirect without hash)
+    // 1. Handle PKCE code exchange — Supabase sends ?code=xxx after OAuth
+    const code = searchParams.get('code')
+    if (code && !exchangingRef.current) {
+      exchangingRef.current = true
+      supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
+        exchangingRef.current = false
+        if (!error && data.session) {
+          // Clean the code from the URL
+          const url = new URL(window.location.href)
+          url.searchParams.delete('code')
+          window.history.replaceState({}, '', url.toString())
+          redirect(data.session.user.user_metadata?.onboarding_complete === true)
+        }
+      })
+      return // Don't run other checks while exchanging
+    }
+
+    // 2. Check existing session (page refresh, already authenticated)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         redirect(session.user.user_metadata?.onboarding_complete === true)
       }
     })
 
-    // 2. Listen for auth state changes — catches OAuth hash fragments,
-    //    magic link tokens, and any other sign-in events
+    // 3. Listen for auth state changes (hash fragments, token refresh, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
@@ -37,7 +55,7 @@ export default function AuthListener() {
     )
 
     return () => subscription.unsubscribe()
-  }, [router, pathname])
+  }, [router, pathname, searchParams])
 
   return null
 }

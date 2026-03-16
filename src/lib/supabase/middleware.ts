@@ -30,11 +30,34 @@ export async function updateSession(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const path = request.nextUrl.pathname
 
-  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
+  // Protected routes — redirect unauthenticated users to /auth
+  const protectedPaths = ['/dashboard', '/onboarding']
+  if (!user && protectedPaths.some(p => path.startsWith(p))) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth'
     return NextResponse.redirect(url)
+  }
+
+  // If logged in, check onboarding status
+  if (user) {
+    const onboardingComplete = user.user_metadata?.onboarding_complete === true
+
+    // User hasn't completed onboarding — redirect to /onboarding
+    // (except if they're already there, on /auth, or on the callback)
+    if (!onboardingComplete && !path.startsWith('/onboarding') && !path.startsWith('/auth')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/onboarding'
+      return NextResponse.redirect(url)
+    }
+
+    // User already completed onboarding — skip /onboarding, go to landing
+    if (onboardingComplete && path.startsWith('/onboarding')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

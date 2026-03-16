@@ -30,11 +30,33 @@ export async function updateSession(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const pathname = request.nextUrl.pathname
 
-  if (!user && request.nextUrl.pathname.startsWith('/profile')) {
+  // Authenticated user on landing or auth page → redirect to profile or setup
+  if (user && (pathname === '/' || pathname === '/auth')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .single()
+
     const url = request.nextUrl.clone()
-    url.pathname = '/auth'
+    if (profile) {
+      url.pathname = `/profile/${profile.username}`
+    } else {
+      url.pathname = '/profile/setup'
+    }
     return NextResponse.redirect(url)
+  }
+
+  // Unauthenticated user on protected routes → redirect to auth
+  if (!user && (pathname.startsWith('/profile/setup') || pathname.startsWith('/profile/'))) {
+    // Allow public profile viewing for /profile/[username] but protect /profile/setup
+    if (pathname.startsWith('/profile/setup')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/auth'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

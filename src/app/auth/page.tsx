@@ -130,9 +130,24 @@ function AuthPageInner() {
 
     if (mode === 'login') {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) { setLoading(false); setError(error.message); return }
+      // Check if user has a profile
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', user.id)
+          .single()
+        if (profile) {
+          router.push(`/profile/${profile.username}`)
+        } else {
+          router.push('/profile/setup')
+        }
+      } else {
+        router.push('/profile/setup')
+      }
       setLoading(false)
-      if (error) { setError(error.message); return }
-      router.push('/')
     } else {
       const { error } = await supabase.auth.signUp({
         email,

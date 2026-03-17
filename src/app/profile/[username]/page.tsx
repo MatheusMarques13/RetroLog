@@ -193,7 +193,7 @@ const ActivityItem = ({ item }: { item: typeof recentActivity[0] }) => {
 };
 
 const StatBlock = ({ label, value, icon, color }: { label: string; value: string | number; icon: React.ReactNode; color: string }) => (
-  <div style={{ background: '#FFF9F0', border: '1.5px solid #E5E0DA', borderRadius: '12px', padding: '16px', display: 'flex', flex-direction: 'column', gap: '8px' }}>
+  <div style={{ background: '#FFF9F0', border: '1.5px solid #E5E0DA', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
       {icon}
       <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.6rem', color: '#6E6258', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</span>

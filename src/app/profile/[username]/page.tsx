@@ -1,5 +1,6 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import {
   FilmIcon, GamepadIcon, BookIcon, VinylIcon, PersonIcon,
   StarFilledIcon, HeartIcon, HeartFilledIcon, MessageIcon,
@@ -16,8 +17,9 @@ import {
   mockDiary, mockCollection, mockRatings, mockSocial,
   mockMoodSummary,
 } from '@/data/mockProfile'
-import { Stars, MediaCard, StatBlock, MEDIA_ICONS, MEDIA_COLORS, FilterChips } from '@/components/profile/shared'
+import { Stars, MediaCard, StatBlock, MEDIA_ICONS, MEDIA_COLORS, FilterChips, EmptyState } from '@/components/profile/shared'
 import EditProfileModal from '@/components/profile/EditProfileModal'
+import { fetchProfileByUsername, getCurrentUser, type ProfileData } from '@/lib/supabase/profile'
 
 // ── Tab definitions ──
 const TABS = [
@@ -1072,8 +1074,78 @@ export default function ProfilePage({ params }: { params: { username: string } }
   const [activeTab, setActiveTab] = useState('overview')
   const [following, setFollowing] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
+  const [profileData, setProfileData] = useState<ProfileData | null>(null)
+  const [isOwner, setIsOwner] = useState(false)
+  const [isDemo, setIsDemo] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
 
-  const tabContent: Record<string, React.ReactNode> = {
+  useEffect(() => {
+    async function load() {
+      try {
+        const profile = await fetchProfileByUsername(params.username)
+        const user = await getCurrentUser()
+
+        if (profile) {
+          setProfileData(profile)
+          setIsOwner(user?.id === profile.id)
+        } else if (params.username === 'retromatheus') {
+          setIsDemo(true)
+        } else {
+          setNotFound(true)
+        }
+      } catch {
+        if (params.username === 'retromatheus') {
+          setIsDemo(true)
+        } else {
+          setNotFound(true)
+        }
+      }
+      setIsLoading(false)
+    }
+    load()
+  }, [params.username])
+
+  const handleProfileSave = useCallback((updated: ProfileData) => {
+    setProfileData(updated)
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-2xl bg-accent-pink/10 border-2 border-accent-pink/30 flex items-center justify-center mx-auto mb-4 shimmer">
+            <SparklesIcon className="w-6 h-6 text-accent-pink" />
+          </div>
+          <p className="font-hand text-txt-secondary">Loading profile...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <PersonIcon className="w-12 h-12 text-txt-secondary/30 mx-auto mb-4" />
+          <h1 className="font-hand font-bold text-2xl text-txt-primary mb-2">Profile not found</h1>
+          <p className="font-hand text-txt-secondary mb-6">No user with the username &ldquo;{params.username}&rdquo; exists yet.</p>
+          <Link href="/" className="retro-btn-pink text-sm">Back to Home</Link>
+        </div>
+      </div>
+    )
+  }
+
+  const displayName = isDemo ? mockUser.displayName : (profileData?.display_name || profileData?.username || params.username)
+  const bio = isDemo ? mockUser.bio : (profileData?.bio || '')
+  const userLocation = isDemo ? mockUser.location : (profileData?.location || '')
+  const website = isDemo ? mockUser.website : (profileData?.website || '')
+  const pronouns = isDemo ? mockUser.pronouns : (profileData?.pronouns || '')
+  const quote = isDemo ? mockUser.favoriteQuote : (profileData?.quote || '')
+  const avatarUrl = isDemo ? null : profileData?.avatar_url
+  const memberSince = isDemo ? mockUser.memberSince : (profileData?.created_at ? new Date(profileData.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '')
+
+  const demoTabContent: Record<string, React.ReactNode> = {
     overview:   <TabOverview />,
     activity:   <TabActivity />,
     reviews:    <TabReviews />,
@@ -1088,6 +1160,40 @@ export default function ProfilePage({ params }: { params: { username: string } }
     about:      <TabAbout />,
   }
 
+  const realTabContent: Record<string, React.ReactNode> = {
+    overview: (
+      <div className="fade-in-up space-y-6">
+        <div className="retro-card p-8 text-center">
+          <SparklesIcon className="w-8 h-8 text-accent-pink/40 mx-auto mb-3" />
+          <p className="font-hand text-txt-secondary">Start logging films, games, books, and albums to build your overview.</p>
+        </div>
+      </div>
+    ),
+    activity:   <EmptyState icon={ClockIcon} message="No activity yet. Start logging media to see your feed!" />,
+    reviews:    <EmptyState icon={MessageIcon} message="No reviews written yet." />,
+    ratings:    <EmptyState icon={StarFilledIcon} message="No ratings yet. Rate your first film, game, or book!" />,
+    lists:      <EmptyState icon={ListIcon} message="No lists created yet." />,
+    favorites:  <EmptyState icon={HeartFilledIcon} message="No favorites yet. Mark your all-time favorites!" />,
+    diary:      <EmptyState icon={CalendarIcon} message="Your diary is empty. Log what you watch, play, and read!" />,
+    collection: <EmptyState icon={BookmarkIcon} message="Nothing in your collection yet." />,
+    backlog:    <EmptyState icon={TargetIcon} message="Your backlog is empty. Add things you want to consume!" />,
+    stats:      <EmptyState icon={ChartIcon} message="Not enough data for stats yet. Keep logging!" />,
+    social:     <EmptyState icon={UsersIcon} message="No social connections yet." />,
+    about: (
+      <div className="fade-in-up space-y-6">
+        {bio && (
+          <div className="retro-card p-5">
+            <p className="section-label">About Me</p>
+            <p className="font-hand text-sm text-txt-primary leading-relaxed">{bio}</p>
+          </div>
+        )}
+        {!bio && <EmptyState icon={PersonIcon} message="No bio yet. Edit your profile to tell people about yourself!" />}
+      </div>
+    ),
+  }
+
+  const tabContent = isDemo ? demoTabContent : realTabContent
+
   return (
     <div className="min-h-screen bg-bg-primary">
       <div className="scanlines fixed inset-0 pointer-events-none z-30 opacity-15" />
@@ -1096,7 +1202,7 @@ export default function ProfilePage({ params }: { params: { username: string } }
       <div className="w-full h-44 md:h-56 bg-gradient-to-r from-accent-pink via-accent-yellow to-accent-mint relative">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg,rgba(0,0,0,0.05) 0px,transparent 1px,transparent 8px)' }} />
         <div className="absolute inset-0 flex items-center justify-center">
-          <p className="font-pixel text-white/20 text-2xl md:text-4xl select-none">{mockUser.displayName}</p>
+          <p className="font-pixel text-white/20 text-2xl md:text-4xl select-none">{displayName}</p>
         </div>
       </div>
 
@@ -1104,89 +1210,106 @@ export default function ProfilePage({ params }: { params: { username: string } }
       <div className="max-w-5xl mx-auto px-4 md:px-6">
         <div className="relative flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 mb-6">
           {/* Avatar */}
-          <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-bg-secondary border-4 border-bg-primary shadow-retro flex items-center justify-center flex-shrink-0">
-            <span className="font-pixel text-3xl text-accent-pink">{mockUser.displayName.charAt(0)}</span>
+          <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-bg-secondary border-4 border-bg-primary shadow-retro flex items-center justify-center flex-shrink-0 overflow-hidden">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+            ) : (
+              <span className="font-pixel text-3xl text-accent-pink">{displayName.charAt(0)}</span>
+            )}
           </div>
           {/* Info */}
           <div className="flex-1 pb-1">
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <h1 className="font-hand font-bold text-2xl text-txt-primary">{mockUser.displayName}</h1>
-              {mockUser.isVerified && <span className="chip chip-blue text-[10px]"><CheckIcon className="w-3 h-3" />verified</span>}
-              {mockUser.isSupporter && <span className="chip chip-yellow text-[10px]"><StarFilledIcon className="w-3 h-3" />supporter</span>}
+              <h1 className="font-hand font-bold text-2xl text-txt-primary">{displayName}</h1>
+              {isDemo && mockUser.isVerified && <span className="chip chip-blue text-[10px]"><CheckIcon className="w-3 h-3" />verified</span>}
+              {isDemo && mockUser.isSupporter && <span className="chip chip-yellow text-[10px]"><StarFilledIcon className="w-3 h-3" />supporter</span>}
             </div>
             <p className="font-mono text-sm text-txt-secondary">@{params.username}</p>
-            <p className="font-hand text-sm text-txt-secondary mt-0.5">{mockUser.pronouns}</p>
+            {pronouns && <p className="font-hand text-sm text-txt-secondary mt-0.5">{pronouns}</p>}
           </div>
           {/* Actions */}
           <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setFollowing(!following)}
-              className={following ? 'retro-btn-ghost text-sm' : 'retro-btn-pink text-sm'}
-            >
-              <UserPlusIcon className="w-4 h-4" />
-              {following ? 'Following' : 'Follow'}
-            </button>
-            <button className="retro-btn-ghost text-sm"><MailIcon className="w-4 h-4" />Message</button>
+            {!isOwner && (
+              <>
+                <button
+                  onClick={() => setFollowing(!following)}
+                  className={following ? 'retro-btn-ghost text-sm' : 'retro-btn-pink text-sm'}
+                >
+                  <UserPlusIcon className="w-4 h-4" />
+                  {following ? 'Following' : 'Follow'}
+                </button>
+                <button className="retro-btn-ghost text-sm"><MailIcon className="w-4 h-4" />Message</button>
+              </>
+            )}
             <button className="retro-btn-ghost text-sm"><ShareIcon className="w-4 h-4" />Share</button>
-            <button onClick={() => setEditOpen(true)} className="retro-btn-ghost text-sm">
-              <EditIcon className="w-4 h-4" />Edit
-            </button>
+            {isOwner && (
+              <button onClick={() => setEditOpen(true)} className="retro-btn-ghost text-sm">
+                <EditIcon className="w-4 h-4" />Edit
+              </button>
+            )}
           </div>
         </div>
 
         {/* Bio + meta */}
         <div className="retro-card p-5 mb-6">
-          <p className="font-hand text-sm text-txt-primary leading-relaxed mb-4">{mockUser.bio}</p>
+          {bio && <p className="font-hand text-sm text-txt-primary leading-relaxed mb-4">{bio}</p>}
+          {!bio && !isDemo && <p className="font-hand text-sm text-txt-secondary italic mb-4">No bio yet.</p>}
           <div className="flex flex-wrap gap-x-5 gap-y-2">
-            {mockUser.location && (
+            {userLocation && (
               <span className="flex items-center gap-1.5 font-mono text-xs text-txt-secondary">
-                <MapPinIcon className="w-3.5 h-3.5 text-accent-pink" />{mockUser.location}
+                <MapPinIcon className="w-3.5 h-3.5 text-accent-pink" />{userLocation}
               </span>
             )}
-            {mockUser.website && (
-              <a href={`https://${mockUser.website}`} target="_blank" rel="noopener" className="flex items-center gap-1.5 font-mono text-xs text-accent-blue hover:underline">
-                <GlobeIcon className="w-3.5 h-3.5" />{mockUser.website}
+            {website && (
+              <a href={`https://${website}`} target="_blank" rel="noopener" className="flex items-center gap-1.5 font-mono text-xs text-accent-blue hover:underline">
+                <GlobeIcon className="w-3.5 h-3.5" />{website}
               </a>
             )}
-            <span className="flex items-center gap-1.5 font-mono text-xs text-txt-secondary">
-              <ClockIcon className="w-3.5 h-3.5 text-accent-mint" />Member since {mockUser.memberSince}
-            </span>
+            {memberSince && (
+              <span className="flex items-center gap-1.5 font-mono text-xs text-txt-secondary">
+                <ClockIcon className="w-3.5 h-3.5 text-accent-mint" />Member since {memberSince}
+              </span>
+            )}
           </div>
-          {mockUser.favoriteQuote && (
+          {quote && (
             <p className="font-hand text-sm text-txt-secondary italic mt-4 border-l-2 border-accent-yellow pl-3">
-              {mockUser.favoriteQuote}
+              {quote}
             </p>
           )}
 
-          {/* Profile completion + theme */}
-          <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border/50">
-            <div className="flex items-center gap-2 flex-1">
-              <span className="font-mono text-[10px] text-txt-secondary">Profile</span>
-              <div className="flex-1 max-w-[120px] h-1.5 bg-bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-accent-mint rounded-full" style={{ width: `${mockUser.profileCompletion}%` }} />
+          {/* Profile completion + theme — only for demo */}
+          {isDemo && (
+            <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border/50">
+              <div className="flex items-center gap-2 flex-1">
+                <span className="font-mono text-[10px] text-txt-secondary">Profile</span>
+                <div className="flex-1 max-w-[120px] h-1.5 bg-bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full bg-accent-mint rounded-full" style={{ width: `${mockUser.profileCompletion}%` }} />
+                </div>
+                <span className="font-mono text-[10px] text-accent-mint">{mockUser.profileCompletion}%</span>
               </div>
-              <span className="font-mono text-[10px] text-accent-mint">{mockUser.profileCompletion}%</span>
+              <span className="chip text-[10px]">{mockUser.theme}</span>
             </div>
-            <span className="chip text-[10px]">{mockUser.theme}</span>
-          </div>
+          )}
         </div>
 
-        {/* Stats row */}
-        <div className="flex flex-wrap gap-x-8 gap-y-2 mb-6 px-1">
-          {[
-            { label: 'logs', val: mockUser.stats.totalLogs },
-            { label: 'reviews', val: mockUser.stats.reviews },
-            { label: 'lists', val: mockUser.stats.lists },
-            { label: 'likes', val: mockUser.stats.likes.toLocaleString() },
-            { label: 'followers', val: mockUser.stats.followers.toLocaleString() },
-            { label: 'following', val: mockUser.stats.following },
-          ].map(({ label, val }) => (
-            <div key={label} className="flex items-baseline gap-1">
-              <span className="font-mono font-bold text-txt-primary">{val}</span>
-              <span className="font-hand text-xs text-txt-secondary">{label}</span>
-            </div>
-          ))}
-        </div>
+        {/* Stats row — only for demo */}
+        {isDemo && (
+          <div className="flex flex-wrap gap-x-8 gap-y-2 mb-6 px-1">
+            {[
+              { label: 'logs', val: mockUser.stats.totalLogs },
+              { label: 'reviews', val: mockUser.stats.reviews },
+              { label: 'lists', val: mockUser.stats.lists },
+              { label: 'likes', val: mockUser.stats.likes.toLocaleString() },
+              { label: 'followers', val: mockUser.stats.followers.toLocaleString() },
+              { label: 'following', val: mockUser.stats.following },
+            ].map(({ label, val }) => (
+              <div key={label} className="flex items-baseline gap-1">
+                <span className="font-mono font-bold text-txt-primary">{val}</span>
+                <span className="font-hand text-xs text-txt-secondary">{label}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none">
@@ -1208,7 +1331,17 @@ export default function ProfilePage({ params }: { params: { username: string } }
       </div>
 
       {/* Edit Profile Modal */}
-      <EditProfileModal isOpen={editOpen} onClose={() => setEditOpen(false)} />
+      {isOwner && profileData && (
+        <EditProfileModal
+          isOpen={editOpen}
+          onClose={() => setEditOpen(false)}
+          profile={profileData}
+          onSave={handleProfileSave}
+        />
+      )}
+      {isDemo && (
+        <EditProfileModal isOpen={editOpen} onClose={() => setEditOpen(false)} />
+      )}
     </div>
   )
 }

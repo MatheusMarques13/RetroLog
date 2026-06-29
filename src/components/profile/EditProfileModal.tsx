@@ -1,11 +1,14 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   XIcon, CameraIcon, UploadIcon, PaletteIcon, LayoutIcon,
   LockIcon, BellIcon, DownloadIcon, TrashIcon, AlertTriangleIcon,
   CheckIcon, GlobeIcon, LogOutIcon, SlidersIcon,
 } from '@/components/icons'
 import { ToggleSwitch } from './shared'
+import { type ProfileData } from '@/lib/supabase/profile'
+import { createClient } from '@/lib/supabase/client'
+import { uploadAvatar } from '@/lib/supabase/storage'
 
 const ACCENT_COLORS = [
   { id: 'pink', color: '#FF6B9D', label: 'Pink' },
@@ -28,18 +31,30 @@ const LAYOUTS = [
   { id: 'dashboard', label: 'Dashboard' },
 ]
 
-export default function EditProfileModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+interface EditProfileModalProps {
+  isOpen: boolean
+  onClose: () => void
+  profile?: ProfileData
+  onSave?: (updated: ProfileData) => void
+}
+
+export default function EditProfileModal({ isOpen, onClose, profile, onSave }: EditProfileModalProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [activeSection, setActiveSection] = useState('profile')
-  const [displayName, setDisplayName] = useState('Matheus Marques')
-  const [username, setUsername] = useState('retromatheus')
-  const [bio, setBio] = useState('Cinephile, gamer, bookworm, vinyl collector.')
-  const [pronouns, setPronouns] = useState('he/him')
-  const [location, setLocation] = useState('Fortaleza, CE, Brazil')
-  const [website, setWebsite] = useState('retromynd.com')
-  const [quote, setQuote] = useState('"The stuff that dreams are made of."')
+  const [displayName, setDisplayName] = useState('')
+  const [username, setUsername] = useState('')
+  const [bio, setBio] = useState('')
+  const [pronouns, setPronouns] = useState('')
+  const [location, setLocation] = useState('')
+  const [website, setWebsite] = useState('')
+  const [quote, setQuote] = useState('')
   const [accentColor, setAccentColor] = useState('pink')
   const [activeTheme, setActiveTheme] = useState('paper-light')
   const [activeLayout, setActiveLayout] = useState('classic')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [roundedCorners, setRoundedCorners] = useState(true)
   const [compactCards, setCompactCards] = useState(false)
   const [publicProfile, setPublicProfile] = useState(true)
@@ -52,7 +67,87 @@ export default function EditProfileModal({ isOpen, onClose }: { isOpen: boolean;
   const [followNotifs, setFollowNotifs] = useState(true)
   const [spoilerDefaults, setSpoilerDefaults] = useState(false)
 
+  useEffect(() => {
+    if (profile) {
+      setDisplayName(profile.display_name || '')
+      setUsername(profile.username)
+      setBio(profile.bio || '')
+      setPronouns(profile.pronouns || '')
+      setLocation(profile.location || '')
+      setWebsite(profile.website || '')
+      setQuote(profile.quote || '')
+      setAccentColor(profile.accent_color || 'pink')
+      setActiveTheme(profile.theme || 'paper-light')
+      setActiveLayout(profile.layout || 'classic')
+      setAvatarUrl(profile.avatar_url)
+    }
+  }, [profile])
+
   if (!isOpen) return null
+
+  const isConnected = !!profile && !!onSave
+
+  const handleSave = async () => {
+    if (!profile || !onSave) return
+    setSaving(true)
+    setError(null)
+
+    const supabase = createClient()
+    const updates = {
+      display_name: displayName.trim() || null,
+      bio: bio.trim() || null,
+      pronouns: pronouns.trim() || null,
+      location: location.trim() || null,
+      website: website.trim() || null,
+      quote: quote.trim() || null,
+      accent_color: accentColor,
+      theme: activeTheme,
+      layout: activeLayout,
+    }
+
+    const { error: err } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', profile.id)
+
+    if (!err) {
+      onSave({ ...profile, ...updates, avatar_url: avatarUrl })
+      onClose()
+    } else {
+      setError(err.message)
+    }
+    setSaving(false)
+  }
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !profile) return
+
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Image must be under 2MB.')
+      return
+    }
+    if (!file.type.startsWith('image/')) {
+      setError('Only image files are allowed.')
+      return
+    }
+
+    setUploadingAvatar(true)
+    setError(null)
+
+    const url = await uploadAvatar(profile.id, file)
+    if (url) {
+      setAvatarUrl(url)
+      const supabase = createClient()
+      await supabase
+        .from('profiles')
+        .update({ avatar_url: url })
+        .eq('id', profile.id)
+    } else {
+      setError('Failed to upload avatar.')
+    }
+    setUploadingAvatar(false)
+  }
 
   const sections = [
     { id: 'profile', label: 'Profile Info', icon: CameraIcon },
@@ -102,12 +197,28 @@ export default function EditProfileModal({ isOpen, onClose }: { isOpen: boolean;
               <div className="space-y-4">
                 <p className="section-label">Profile Photo</p>
                 <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-2xl bg-bg-secondary border-2 border-border flex items-center justify-center">
-                    <span className="font-pixel text-2xl text-accent-pink">M</span>
+                  <div className="w-20 h-20 rounded-2xl bg-bg-secondary border-2 border-border flex items-center justify-center overflow-hidden">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="font-pixel text-2xl text-accent-pink">{(displayName || '?').charAt(0)}</span>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <button className="retro-btn-ghost text-xs py-2 px-3">
-                      <UploadIcon className="w-3.5 h-3.5" />Upload Photo
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarChange}
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingAvatar || !isConnected}
+                      className="retro-btn-ghost text-xs py-2 px-3"
+                    >
+                      <UploadIcon className="w-3.5 h-3.5" />
+                      {uploadingAvatar ? 'Uploading...' : 'Upload Photo'}
                     </button>
                     <p className="font-mono text-[10px] text-txt-secondary">JPG, PNG. Max 2MB.</p>
                   </div>
@@ -133,8 +244,9 @@ export default function EditProfileModal({ isOpen, onClose }: { isOpen: boolean;
                 <label className="font-hand text-sm font-bold text-txt-primary mb-1 block">Username</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-sm text-txt-secondary">@</span>
-                  <input value={username} onChange={e => setUsername(e.target.value)} className="input-field pl-8" />
+                  <input value={username} readOnly className="input-field pl-8 opacity-60 cursor-not-allowed" />
                 </div>
+                <p className="font-mono text-[10px] text-txt-secondary mt-1">Username cannot be changed yet.</p>
               </div>
               <div>
                 <label className="font-hand text-sm font-bold text-txt-primary mb-1 block">Bio</label>
@@ -176,8 +288,17 @@ export default function EditProfileModal({ isOpen, onClose }: { isOpen: boolean;
                 </div>
               </div>
 
-              <button className="retro-btn-pink text-sm w-full justify-center">
-                <CheckIcon className="w-4 h-4" />Save Changes
+              {error && (
+                <p className="font-mono text-xs text-red-500">{error}</p>
+              )}
+
+              <button
+                onClick={isConnected ? handleSave : undefined}
+                disabled={saving}
+                className="retro-btn-pink text-sm w-full justify-center"
+              >
+                <CheckIcon className="w-4 h-4" />
+                {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           )}
@@ -254,8 +375,13 @@ export default function EditProfileModal({ isOpen, onClose }: { isOpen: boolean;
                 </div>
               </div>
 
-              <button className="retro-btn-pink text-sm w-full justify-center">
-                <CheckIcon className="w-4 h-4" />Save Appearance
+              <button
+                onClick={isConnected ? handleSave : undefined}
+                disabled={saving}
+                className="retro-btn-pink text-sm w-full justify-center"
+              >
+                <CheckIcon className="w-4 h-4" />
+                {saving ? 'Saving...' : 'Save Appearance'}
               </button>
             </div>
           )}

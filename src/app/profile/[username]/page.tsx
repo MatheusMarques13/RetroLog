@@ -50,193 +50,68 @@ const MEDIA_FILTERS = [
 // TAB COMPONENTS
 // ══════════════════════════════════════════════════════════════
 
+function FavRow({ label, items, type, sub }: { label: string; items: any[]; type: string; sub: (x: any) => string }) {
+  return (
+    <section>
+      <div className="flex items-baseline justify-between mb-3">
+        <p className="section-label mb-0">{label}</p>
+        <span className="font-mono text-xs text-txt-muted">{items.length}</span>
+      </div>
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 md:gap-4">
+        {items.map(f => <MediaCard key={f.id} title={f.title} subtitle={sub(f)} rating={f.rating} type={type} />)}
+      </div>
+    </section>
+  )
+}
+
 function TabOverview() {
   return (
-    <div className="space-y-8 fade-in-up">
-      {/* Quick stats */}
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-        {[
-          { label: 'Films',   val: mockStats.totalFilms,       color: 'text-accent-pink',   icon: FilmIcon },
-          { label: 'Games',   val: mockStats.totalGames,       color: 'text-accent-yellow', icon: GamepadIcon },
-          { label: 'Books',   val: mockStats.totalBooks,       color: 'text-accent-mint',   icon: BookIcon },
-          { label: 'Albums',  val: mockStats.totalAlbums,      color: 'text-accent-blue',   icon: VinylIcon },
-          { label: 'Artists', val: mockStats.totalArtists,     color: 'text-accent-pink',   icon: PersonIcon },
-          { label: 'Reviews', val: mockUser.stats.reviews,     color: 'text-accent-yellow', icon: MessageIcon },
-        ].map(({ label, val, color, icon: Icon }) => (
-          <div key={label} className="retro-card text-center p-4 retro-card-hover">
-            <Icon className={`w-5 h-5 ${color} mx-auto mb-2`} />
-            <p className={`font-mono text-xl font-bold ${color}`}>{val.toLocaleString()}</p>
-            <p className="font-hand text-xs text-txt-secondary">{label}</p>
-          </div>
-        ))}
-      </div>
+    <div className="space-y-12 fade-in-up">
+      <FavRow label="Favorite Films"  items={mockFavorites.films}  type="film"  sub={f => String(f.year)} />
+      <FavRow label="Favorite Games"  items={mockFavorites.games}  type="game"  sub={f => String(f.year)} />
+      <FavRow label="Favorite Albums" items={mockFavorites.albums} type="album" sub={f => f.artist} />
 
-      {/* Current obsession */}
-      {mockUser.currentObsession && (
-        <div className="retro-card p-5 border-accent-yellow/30 bg-accent-yellow/5">
-          <div className="flex items-center gap-2 mb-2">
-            <FireIcon className="w-4 h-4 text-accent-yellow" />
-            <p className="section-label mb-0">Current Obsession</p>
-          </div>
-          <div className="flex items-center gap-3">
-            {(() => { const Icon = MEDIA_ICONS[mockUser.currentObsession.type] || FilmIcon; return <Icon className={`w-6 h-6 ${MEDIA_COLORS[mockUser.currentObsession.type]}`} /> })()}
-            <div>
-              <p className="font-hand font-bold text-txt-primary">{mockUser.currentObsession.title}</p>
-              <p className="font-hand text-sm text-txt-secondary">{mockUser.currentObsession.note}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* This month in media */}
-      <div className="retro-card p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <CalendarIcon className="w-4 h-4 text-accent-blue" />
-          <p className="section-label mb-0">This Month in Media</p>
-        </div>
-        <div className="flex gap-4 flex-wrap">
-          {[
-            { label: 'Films', val: mockStats.thisMonthMedia.films, color: 'text-accent-pink' },
-            { label: 'Games', val: mockStats.thisMonthMedia.games, color: 'text-accent-yellow' },
-            { label: 'Books', val: mockStats.thisMonthMedia.books, color: 'text-accent-mint' },
-            { label: 'Albums', val: mockStats.thisMonthMedia.albums, color: 'text-accent-blue' },
-          ].map(s => (
-            <div key={s.label} className="flex items-baseline gap-1.5">
-              <span className={`font-mono text-lg font-bold ${s.color}`}>{s.val}</span>
-              <span className="font-hand text-xs text-txt-secondary">{s.label}</span>
-            </div>
-          ))}
-          <div className="flex items-baseline gap-1.5 ml-auto">
-            <span className="font-mono text-lg font-bold text-txt-primary">{mockStats.thisMonthMedia.total}</span>
-            <span className="font-hand text-xs text-txt-secondary">total</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Favorite Films */}
-      <div>
-        <p className="section-label">Favorite Films</p>
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-          {mockFavorites.films.map(f => <MediaCard key={f.id} title={f.title} subtitle={String(f.year)} rating={f.rating} type="film" />)}
-        </div>
-      </div>
-
-      {/* Favorite Games */}
-      <div>
-        <p className="section-label">Favorite Games</p>
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-          {mockFavorites.games.map(g => <MediaCard key={g.id} title={g.title} subtitle={String(g.year)} rating={g.rating} type="game" />)}
-        </div>
-      </div>
-
-      {/* Favorite Albums */}
-      <div>
-        <p className="section-label">Favorite Albums</p>
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-          {mockFavorites.albums.map(a => <MediaCard key={a.id} title={a.title} subtitle={a.artist} rating={a.rating} type="album" />)}
-        </div>
-      </div>
-
-      {/* Pinned content row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Pinned Review */}
-        <div className="retro-card p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <PinIcon className="w-4 h-4 text-accent-pink" />
-            <p className="section-label mb-0">Pinned Review</p>
-          </div>
-          <div className="flex items-start gap-2 mb-2">
-            <FilmIcon className="w-4 h-4 text-accent-pink flex-shrink-0 mt-0.5" />
-            <p className="font-hand font-bold text-sm text-txt-primary">{mockReviews[0].title}</p>
-            <Stars rating={mockReviews[0].rating} />
-          </div>
-          <p className="font-hand text-sm text-txt-secondary leading-relaxed line-clamp-3">{mockReviews[0].excerpt}</p>
-          <div className="flex items-center gap-3 mt-3">
-            <span className="flex items-center gap-1 font-mono text-xs text-txt-secondary"><HeartIcon className="w-3 h-3" />{mockReviews[0].likes}</span>
-            <span className="flex items-center gap-1 font-mono text-xs text-txt-secondary"><MessageIcon className="w-3 h-3" />{mockReviews[0].comments}</span>
-          </div>
-        </div>
-
-        {/* Pinned List */}
-        <div className="retro-card p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <PinIcon className="w-4 h-4 text-accent-mint" />
-            <p className="section-label mb-0">Pinned List</p>
-          </div>
-          <p className="font-hand font-bold text-sm text-txt-primary mb-1">{mockLists[0].title}</p>
-          <p className="font-hand text-sm text-txt-secondary leading-relaxed line-clamp-3">{mockLists[0].description}</p>
-          <div className="flex items-center gap-3 mt-3">
-            <span className="font-mono text-xs text-txt-secondary">{mockLists[0].itemCount} items</span>
-            <span className="flex items-center gap-1 font-mono text-xs text-txt-secondary"><HeartIcon className="w-3 h-3" />{mockLists[0].likes}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Mood / Taste summary */}
-      <div className="retro-card p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <SparklesIcon className="w-4 h-4 text-accent-yellow" />
-          <p className="section-label mb-0">Taste Profile</p>
-        </div>
-        <p className="font-hand text-sm text-txt-secondary leading-relaxed mb-3">{mockMoodSummary.tasteProfile}</p>
-        <div className="flex flex-wrap gap-2">
-          {mockMoodSummary.topMoods.map(m => (
-            <span key={m} className="chip">{m}</span>
-          ))}
-        </div>
-      </div>
-
-      {/* Taste tags */}
-      <div>
-        <p className="section-label">Taste Tags</p>
-        <div className="flex flex-wrap gap-2">
-          {mockUser.tasteTags.map((t, i) => (
-            <span key={t} className={`chip ${i % 4 === 0 ? 'chip-pink' : i % 4 === 1 ? 'chip-yellow' : i % 4 === 2 ? 'chip-mint' : 'chip-blue'}`}>{t}</span>
-          ))}
-        </div>
-      </div>
-
-      {/* Badges showcase */}
-      <div>
-        <p className="section-label">Achievements</p>
-        <div className="flex gap-3 overflow-x-auto scrollbar-none pb-2">
-          {mockBadges.slice(0, 6).map(b => {
-            const bgMap: Record<string, string> = { 'accent-pink': 'bg-accent-pink/10 border-accent-pink/30', 'accent-mint': 'bg-accent-mint/10 border-accent-mint/30', 'accent-blue': 'bg-accent-blue/10 border-accent-blue/30', 'accent-yellow': 'bg-accent-yellow/20 border-accent-yellow/40' }
-            const txtMap: Record<string, string> = { 'accent-pink': 'text-accent-pink', 'accent-mint': 'text-accent-mint', 'accent-blue': 'text-accent-blue', 'accent-yellow': 'text-dark' }
-            return (
-              <div key={b.id} className={`flex-shrink-0 retro-card p-3 text-center border ${bgMap[b.color] ?? ''} w-28`}>
-                <AwardIcon className={`w-6 h-6 mx-auto mb-1 ${txtMap[b.color] ?? 'text-txt-secondary'}`} />
-                <p className="font-hand text-xs font-bold text-txt-primary leading-tight">{b.name}</p>
+      {/* Recent reviews */}
+      <section>
+        <p className="section-label">Recent Reviews</p>
+        <div className="space-y-5">
+          {mockReviews.slice(0, 2).map(r => (
+            <article key={r.title} className="border-b border-border pb-5 last:border-0 last:pb-0">
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <p className="font-semibold text-txt-primary">{r.title}</p>
+                <Stars rating={r.rating} />
               </div>
-            )
-          })}
+              <p className="text-sm text-txt-secondary leading-relaxed line-clamp-3">{r.excerpt}</p>
+              <div className="flex items-center gap-4 mt-2.5 font-mono text-xs text-txt-muted">
+                <span className="flex items-center gap-1"><HeartIcon className="w-3 h-3" />{r.likes}</span>
+                <span className="flex items-center gap-1"><MessageIcon className="w-3 h-3" />{r.comments}</span>
+              </div>
+            </article>
+          ))}
         </div>
-      </div>
+      </section>
 
       {/* Recent activity */}
-      <div>
+      <section>
         <p className="section-label">Recent Activity</p>
-        <div className="retro-card divide-y divide-border">
+        <div className="divide-y divide-border">
           {mockActivity.slice(0, 8).map(act => {
             const Icon = MEDIA_ICONS[act.type] || FireIcon
-            const color = MEDIA_COLORS[act.type] || 'text-accent-pink'
             return (
-              <div key={act.id} className="flex items-center gap-3 p-4 hover:bg-bg-secondary transition-colors">
-                <Icon className={`w-5 h-5 ${color} flex-shrink-0`} />
-                <div className="flex-1 min-w-0">
-                  <p className="font-hand text-sm text-txt-primary">
-                    <span className="text-txt-secondary capitalize">{act.action}</span>{' '}
-                    <span className="font-bold">{act.title}</span>
-                    {'artist' in act && act.artist ? ` -- ${act.artist}` : ''}
-                  </p>
-                </div>
+              <div key={act.id} className="flex items-center gap-3 py-3">
+                <Icon className="w-4 h-4 text-txt-muted flex-shrink-0" />
+                <p className="flex-1 min-w-0 text-sm text-txt-primary truncate">
+                  <span className="text-txt-secondary">{act.action}</span>{' '}
+                  <span className="font-semibold">{act.title}</span>
+                  {'artist' in act && act.artist ? <span className="text-txt-muted"> · {act.artist}</span> : null}
+                </p>
                 {'rating' in act && act.rating ? <Stars rating={act.rating} /> : null}
-                <span className="font-mono text-xs text-txt-secondary flex-shrink-0">{act.timestamp}</span>
+                <span className="font-mono text-xs text-txt-muted flex-shrink-0">{act.timestamp}</span>
               </div>
             )
           })}
         </div>
-      </div>
+      </section>
     </div>
   )
 }
@@ -1196,14 +1071,12 @@ export default function ProfilePage({ params }: { params: { username: string } }
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <div className="scanlines fixed inset-0 pointer-events-none z-30 opacity-15" />
-
       {/* COVER */}
-      <div className="w-full h-44 md:h-56 bg-gradient-to-r from-accent-pink via-accent-yellow to-accent-mint relative">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg,rgba(0,0,0,0.05) 0px,transparent 1px,transparent 8px)' }} />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <p className="font-pixel text-white/20 text-2xl md:text-4xl select-none">{displayName}</p>
-        </div>
+      <div
+        className="w-full h-36 md:h-48 border-b border-border relative overflow-hidden"
+        style={{ background: 'linear-gradient(115deg, #FFE4EE 0%, #FFFDF8 50%, #E3F2FD 100%)' }}
+      >
+        <div className="paper-grain absolute inset-0 opacity-50" />
       </div>
 
       {/* PROFILE HEADER */}
@@ -1251,44 +1124,22 @@ export default function ProfilePage({ params }: { params: { username: string } }
         </div>
 
         {/* Bio + meta */}
-        <div className="retro-card p-5 mb-6">
-          {bio && <p className="font-hand text-sm text-txt-primary leading-relaxed mb-4">{bio}</p>}
-          {!bio && !isDemo && <p className="font-hand text-sm text-txt-secondary italic mb-4">No bio yet.</p>}
-          <div className="flex flex-wrap gap-x-5 gap-y-2">
+        <div className="mb-7 max-w-2xl">
+          {bio && <p className="text-[15px] text-txt-primary leading-relaxed mb-3">{bio}</p>}
+          {!bio && !isDemo && <p className="text-sm text-txt-secondary italic mb-3">No bio yet.</p>}
+          <div className="flex flex-wrap gap-x-5 gap-y-1.5 font-mono text-xs text-txt-secondary">
             {userLocation && (
-              <span className="flex items-center gap-1.5 font-mono text-xs text-txt-secondary">
-                <MapPinIcon className="w-3.5 h-3.5 text-accent-pink" />{userLocation}
-              </span>
+              <span className="flex items-center gap-1.5"><MapPinIcon className="w-3.5 h-3.5 text-accent-pink" />{userLocation}</span>
             )}
             {website && (
-              <a href={`https://${website}`} target="_blank" rel="noopener" className="flex items-center gap-1.5 font-mono text-xs text-accent-blue hover:underline">
-                <GlobeIcon className="w-3.5 h-3.5" />{website}
-              </a>
+              <a href={`https://${website}`} target="_blank" rel="noopener" className="flex items-center gap-1.5 text-accent-blue-deep hover:underline"><GlobeIcon className="w-3.5 h-3.5" />{website}</a>
             )}
             {memberSince && (
-              <span className="flex items-center gap-1.5 font-mono text-xs text-txt-secondary">
-                <ClockIcon className="w-3.5 h-3.5 text-accent-mint" />Member since {memberSince}
-              </span>
+              <span className="flex items-center gap-1.5"><ClockIcon className="w-3.5 h-3.5" />Since {memberSince}</span>
             )}
           </div>
           {quote && (
-            <p className="font-hand text-sm text-txt-secondary italic mt-4 border-l-2 border-accent-yellow pl-3">
-              {quote}
-            </p>
-          )}
-
-          {/* Profile completion + theme — only for demo */}
-          {isDemo && (
-            <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border/50">
-              <div className="flex items-center gap-2 flex-1">
-                <span className="font-mono text-[10px] text-txt-secondary">Profile</span>
-                <div className="flex-1 max-w-[120px] h-1.5 bg-bg-secondary rounded-full overflow-hidden">
-                  <div className="h-full bg-accent-mint rounded-full" style={{ width: `${mockUser.profileCompletion}%` }} />
-                </div>
-                <span className="font-mono text-[10px] text-accent-mint">{mockUser.profileCompletion}%</span>
-              </div>
-              <span className="chip text-[10px]">{mockUser.theme}</span>
-            </div>
+            <p className="text-sm text-txt-secondary italic mt-3 border-l-2 border-accent-pink/40 pl-3">{quote}</p>
           )}
         </div>
 

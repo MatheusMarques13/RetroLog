@@ -53,13 +53,14 @@ const config: Config = {
         'note-lilac': '#EDE7F6',
       },
       fontFamily: {
-        // Connect the Notes cohesion — a single typeface across the whole app.
-        // Legacy keys (pixel/hand) are kept so existing markup resolves to IBM Plex Mono.
-        sans: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+        // Readable body — DM Sans (Study Hub). Signature accents — IBM Plex Mono
+        // (Connect the Notes), used for labels, numbers and metadata.
+        // Legacy keys (hand/display) map to DM Sans; pixel maps to mono.
+        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        body: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        display: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        hand: ['"DM Sans"', 'system-ui', 'sans-serif'],
         mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
-        body: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
-        display: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
-        hand: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
         pixel: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
       },
       boxShadow: {

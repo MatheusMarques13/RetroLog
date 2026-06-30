@@ -308,7 +308,7 @@ function AuthPageInner() {
                   <button
                     key={i}
                     onClick={() => handleOAuth(provider)}
-                    className={`w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border font-mono font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 ${cls}`}
+                    className={`w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border font-body font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 ${cls}`}
                   >
                     <Icon className="w-5 h-5" />{label}
                   </button>
@@ -492,7 +492,7 @@ function AuthPageInner() {
             {/* Submit */}
             <button
               type="submit" disabled={loading}
-              className={`w-full py-3.5 rounded-xl font-mono font-semibold text-base text-white border border-accent-pink-deep/30 transition-all duration-200 flex items-center justify-center gap-2 ${
+              className={`w-full py-3.5 rounded-xl font-body font-semibold text-base text-white border border-accent-pink-deep/30 transition-all duration-200 flex items-center justify-center gap-2 ${
                 loading ? 'bg-accent-pink/70 cursor-wait shadow-none' : 'bg-accent-pink shadow-sticker hover:shadow-sticker-lg hover:-translate-y-0.5 active:shadow-none active:translate-y-0'
               }`}
             >

@@ -183,7 +183,7 @@ function AuthPageInner() {
         <div className="relative z-10 text-center max-w-sm w-full">
           {/* Logo */}
           <Link href="/" className="inline-block group">
-            <h1 className="font-pixel text-3xl md:text-4xl text-accent-pink mb-2 cursor-pointer text-glow-pink transition-all duration-300 group-hover:scale-105" style={{ textShadow: '3px 3px 0 #FFD93D' }}>
+            <h1 className="wordmark text-3xl md:text-4xl mb-2 cursor-pointer transition-all duration-300 group-hover:scale-105">
               RetroLog
             </h1>
           </Link>
@@ -308,7 +308,7 @@ function AuthPageInner() {
                   <button
                     key={i}
                     onClick={() => handleOAuth(provider)}
-                    className={`w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 font-hand font-bold text-sm transition-all duration-200 hover:-translate-y-0.5 ${cls}`}
+                    className={`w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border font-mono font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 ${cls}`}
                   >
                     <Icon className="w-5 h-5" />{label}
                   </button>
@@ -492,8 +492,8 @@ function AuthPageInner() {
             {/* Submit */}
             <button
               type="submit" disabled={loading}
-              className={`w-full py-3.5 rounded-xl font-hand font-bold text-base text-white border-2 border-dark transition-all duration-200 flex items-center justify-center gap-2 ${
-                loading ? 'bg-accent-pink/70 cursor-wait shadow-none' : 'bg-accent-pink shadow-retro hover:shadow-retro-lg hover:-translate-y-0.5 active:shadow-none active:translate-y-0'
+              className={`w-full py-3.5 rounded-xl font-mono font-semibold text-base text-white border border-accent-pink-deep/30 transition-all duration-200 flex items-center justify-center gap-2 ${
+                loading ? 'bg-accent-pink/70 cursor-wait shadow-none' : 'bg-accent-pink shadow-sticker hover:shadow-sticker-lg hover:-translate-y-0.5 active:shadow-none active:translate-y-0'
               }`}
             >
               {loading ? (

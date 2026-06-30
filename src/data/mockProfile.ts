@@ -150,18 +150,6 @@ export const mockStats = {
   thisMonthMedia: { films: 14, games: 3, books: 2, albums: 8, total: 27 },
 }
 
-export const mockBadges = [
-  { id: 'bd1', name: 'Century Club', description: 'Logged 100 films', color: 'accent-pink' },
-  { id: 'bd2', name: 'Bookworm', description: 'Read 100 books', color: 'accent-mint' },
-  { id: 'bd3', name: 'Vinyl Junkie', description: 'Rated 200 albums', color: 'accent-blue' },
-  { id: 'bd4', name: 'Completionist', description: 'Finished 50 games', color: 'accent-yellow' },
-  { id: 'bd5', name: 'Tastemaker', description: '1000 likes on reviews', color: 'accent-pink' },
-  { id: 'bd6', name: 'Streak Master', description: '30-day logging streak', color: 'accent-mint' },
-  { id: 'bd7', name: 'Curator', description: 'Created 25 lists', color: 'accent-blue' },
-  { id: 'bd8', name: 'Explorer', description: 'Logged all 5 media types', color: 'accent-yellow' },
-  { id: 'bd9', name: 'Social Butterfly', description: '100 followers', color: 'accent-pink' },
-]
-
 export const mockBacklog = [
   { id: 'bl1', title: 'The Substance', type: 'film', priority: 'high', estimatedTime: '2h 20min', status: 'next' },
   { id: 'bl2', title: 'Metaphor: ReFantazio', type: 'game', priority: 'high', estimatedTime: '80h', status: 'next' },
@@ -245,16 +233,4 @@ export const mockSocial = {
     { id: 'cl2', name: 'Indie Game Collective', members: 1890, description: 'Celebrating indie game developers' },
     { id: 'cl3', name: 'Vinyl Heads', members: 987, description: 'Physical media collectors unite' },
   ],
-}
-
-export const mockMediaFormatPrefs = {
-  film: { theatrical: 35, streaming: 50, physical: 15 },
-  game: { digital: 80, physical: 20 },
-  book: { physical: 45, ebook: 30, audiobook: 25 },
-  album: { streaming: 60, vinyl: 30, cd: 10 },
-}
-
-export const mockMoodSummary = {
-  topMoods: ['Contemplative', 'Adventurous', 'Melancholic', 'Nostalgic', 'Inspired'],
-  tasteProfile: 'You gravitate toward deeply emotional narratives with rich world-building. Your taste spans accessible indie to challenging art-house, with a soft spot for stories about outsiders finding belonging.',
 }

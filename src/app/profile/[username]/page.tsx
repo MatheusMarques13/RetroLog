@@ -6,16 +6,14 @@ import {
   StarFilledIcon, HeartIcon, HeartFilledIcon, MessageIcon,
   BookmarkIcon, ClockIcon, CalendarIcon, ChartIcon, ListIcon, EditIcon,
   ShareIcon, MapPinIcon, GlobeIcon, LinkIcon,
-  AwardIcon, FireIcon, CheckIcon, UserPlusIcon, GridIcon,
-  RowsIcon, RepeatIcon, PinIcon, MailIcon,
-  SparklesIcon, TargetIcon, CoffeeIcon,
-  SearchIcon, UsersIcon, TrendingUpIcon, FilterIcon,
+  FireIcon, UserPlusIcon, GridIcon,
+  RowsIcon, RepeatIcon, MailIcon,
+  SparklesIcon, TargetIcon, UsersIcon,
 } from '@/components/icons'
 import {
   mockUser, mockFavorites, mockActivity,
-  mockReviews, mockLists, mockStats, mockBadges, mockBacklog,
+  mockReviews, mockLists, mockStats, mockBacklog,
   mockDiary, mockCollection, mockRatings, mockSocial,
-  mockMoodSummary,
 } from '@/data/mockProfile'
 import { Stars, MediaCard, StatBlock, MEDIA_ICONS, MEDIA_COLORS, FilterChips, EmptyState } from '@/components/profile/shared'
 import EditProfileModal from '@/components/profile/EditProfileModal'
@@ -637,12 +635,12 @@ function TabStats() {
         <p className="section-label">Monthly Activity</p>
         <div className="flex items-end gap-2 h-32">
           {mockStats.monthlyActivity.map((val, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
+            <div key={i} className="flex-1 h-full flex flex-col items-center justify-end gap-1.5">
               <div
-                className="w-full bg-accent-pink/80 rounded-t-lg transition-all hover:bg-accent-pink"
-                style={{ height: `${(val / maxMonthly) * 100}%` }}
+                className="w-full bg-accent-pink/80 rounded-t-md transition-all hover:bg-accent-pink"
+                style={{ height: `${Math.max(3, (val / maxMonthly) * 88)}%` }}
               />
-              <span className="font-mono text-[8px] text-txt-secondary">
+              <span className="font-mono text-[8px] text-txt-muted">
                 {['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'][i]}
               </span>
             </div>

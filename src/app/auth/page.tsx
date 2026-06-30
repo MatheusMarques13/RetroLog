@@ -162,7 +162,6 @@ function AuthPageInner() {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-bg-primary">
-      <div className="scanlines fixed inset-0 pointer-events-none z-50 opacity-20" />
 
 
       {/* ── LEFT BRANDING PANEL ── */}

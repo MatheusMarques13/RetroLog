@@ -17,7 +17,7 @@ function FloatingMediaCards() {
   const cards = [
     { Icon: FilmIcon, color: 'text-accent-pink', title: 'Blade Runner', label: 'FILM', bg: 'bg-accent-pink/10 border-accent-pink/20', x: 'top-[8%] left-[6%]', delay: '0s', rotate: '-rotate-3' },
     { Icon: GamepadIcon, color: 'text-accent-yellow', title: 'Hollow Knight', label: 'GAME', bg: 'bg-accent-yellow/10 border-accent-yellow/20', x: 'top-[18%] right-[8%]', delay: '1.2s', rotate: 'rotate-2' },
-    { Icon: BookIcon, color: 'text-accent-mint', title: 'Dune', label: 'BOOK', bg: 'bg-accent-mint/10 border-accent-mint/20', x: 'bottom-[30%] left-[8%]', delay: '2.4s', rotate: 'rotate-1' },
+    { Icon: BookIcon, color: 'text-accent-blue', title: 'Dune', label: 'BOOK', bg: 'bg-accent-blue/10 border-accent-blue/20', x: 'bottom-[30%] left-[8%]', delay: '2.4s', rotate: 'rotate-1' },
     { Icon: VinylIcon, color: 'text-accent-blue', title: 'OK Computer', label: 'ALBUM', bg: 'bg-accent-blue/10 border-accent-blue/20', x: 'bottom-[12%] right-[6%]', delay: '0.8s', rotate: '-rotate-2' },
     { Icon: PersonIcon, color: 'text-accent-pink', title: 'Taylor Swift', label: 'ARTIST', bg: 'bg-accent-pink/10 border-accent-pink/20', x: 'top-[52%] left-[3%]', delay: '1.8s', rotate: 'rotate-3' },
     { Icon: HeadphonesIcon, color: 'text-accent-blue', title: 'Folklore', label: 'ALBUM', bg: 'bg-accent-blue/10 border-accent-blue/20', x: 'top-[42%] right-[4%]', delay: '3s', rotate: '-rotate-1' },
@@ -69,7 +69,7 @@ function AuthPageInner() {
   const emailValid    = email.includes('@') && email.includes('.')
   const usernameValid = username.length >= 3 && /^[a-z0-9_]+$/.test(username)
   const passStrength  = password.length >= 12 ? 4 : password.length >= 8 ? 3 : password.length >= 5 ? 2 : password.length > 0 ? 1 : 0
-  const passColor     = ['bg-border', 'bg-accent-pink', 'bg-accent-yellow', 'bg-accent-yellow', 'bg-accent-mint'][passStrength]
+  const passColor     = ['bg-border', 'bg-accent-pink', 'bg-accent-yellow', 'bg-accent-yellow', 'bg-accent-blue'][passStrength]
   const passLabel     = ['', 'Weak', 'Fair', 'Good', 'Strong'][passStrength]
 
   const getRedirectTo = () => {
@@ -168,7 +168,7 @@ function AuthPageInner() {
       {/* ── LEFT BRANDING PANEL ── */}
       <aside className="lg:w-[48%] bg-dark relative overflow-hidden flex flex-col justify-center items-center p-8 lg:p-16 min-h-[52vh] lg:min-h-screen">
         {/* Background effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-accent-pink/20 via-transparent to-accent-mint/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-accent-pink/20 via-transparent to-accent-blue/10" />
         <div className="absolute inset-0" style={{ backgroundImage: 'repeating-linear-gradient(0deg,rgba(255,255,255,0.02) 0px,transparent 1px,transparent 4px)' }} />
         <div className="absolute inset-0 opacity-30 shimmer" />
 
@@ -203,7 +203,7 @@ function AuthPageInner() {
               {[
                 ['Track all 5 media types in one place', 'text-accent-pink'],
                 ['Beautiful stats and year-in-review',   'text-accent-yellow'],
-                ['Create lists and curate your taste',   'text-accent-mint'],
+                ['Create lists and curate your taste',   'text-accent-blue'],
                 ['Follow friends, discover new favorites', 'text-accent-blue'],
               ].map(([t, c], i) => (
                 <li key={i} className="flex items-start gap-2.5 text-white/75 font-hand text-sm">
@@ -236,10 +236,10 @@ function AuthPageInner() {
               &ldquo;Finally one place for all my media obsessions. RetroLog gets it. The stats alone are worth it.&rdquo;
             </p>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-accent-mint/30 flex items-center justify-center">
-                <PersonIcon className="w-3 h-3 text-accent-mint" />
+              <div className="w-5 h-5 rounded-full bg-accent-blue/30 flex items-center justify-center">
+                <PersonIcon className="w-3 h-3 text-accent-blue" />
               </div>
-              <p className="font-mono text-xs text-accent-mint">@pixel_warrior</p>
+              <p className="font-mono text-xs text-accent-blue">@pixel_warrior</p>
               <span className="font-mono text-[10px] text-white/30">2,847 logs</span>
             </div>
           </div>
@@ -249,7 +249,7 @@ function AuthPageInner() {
             {[
               { Icon: FilmIcon, color: 'text-accent-pink', label: 'Films' },
               { Icon: GamepadIcon, color: 'text-accent-yellow', label: 'Games' },
-              { Icon: BookIcon, color: 'text-accent-mint', label: 'Books' },
+              { Icon: BookIcon, color: 'text-accent-blue', label: 'Books' },
               { Icon: VinylIcon, color: 'text-accent-blue', label: 'Albums' },
               { Icon: PersonIcon, color: 'text-accent-pink', label: 'Artists' },
             ].map(({ Icon, color, label }, i) => (
@@ -351,7 +351,7 @@ function AuthPageInner() {
                   {username && (
                     <span className="absolute right-3 top-1/2 -translate-y-1/2">
                       {usernameValid
-                        ? <CheckIcon className="w-4 h-4 text-accent-mint" />
+                        ? <CheckIcon className="w-4 h-4 text-accent-blue" />
                         : <XIcon className="w-4 h-4 text-accent-pink" />}
                     </span>
                   )}
@@ -360,7 +360,7 @@ function AuthPageInner() {
                   <p className="font-hand text-xs text-accent-pink mt-1">Min 3 chars -- lowercase, numbers, underscores only</p>
                 )}
                 {username && usernameValid && (
-                  <p className="font-hand text-xs text-accent-mint mt-1">Username available</p>
+                  <p className="font-hand text-xs text-accent-blue mt-1">Username available</p>
                 )}
               </div>
             )}
@@ -378,7 +378,7 @@ function AuthPageInner() {
                 />
                 {email && (
                   <span className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {emailValid ? <CheckIcon className="w-4 h-4 text-accent-mint" /> : <XIcon className="w-4 h-4 text-accent-pink" />}
+                    {emailValid ? <CheckIcon className="w-4 h-4 text-accent-blue" /> : <XIcon className="w-4 h-4 text-accent-pink" />}
                   </span>
                 )}
               </div>
@@ -418,7 +418,7 @@ function AuthPageInner() {
                         ))}
                       </div>
                       {mode === 'signup' && (
-                        <p className={`font-mono text-[10px] mt-1 ${passStrength >= 3 ? 'text-accent-mint' : passStrength >= 2 ? 'text-accent-yellow' : 'text-accent-pink'}`}>
+                        <p className={`font-mono text-[10px] mt-1 ${passStrength >= 3 ? 'text-accent-blue' : passStrength >= 2 ? 'text-accent-yellow' : 'text-accent-pink'}`}>
                           {passLabel}
                         </p>
                       )}
@@ -441,7 +441,7 @@ function AuthPageInner() {
                       {confirmPassword && (
                         <span className="absolute right-3 top-1/2 -translate-y-1/2">
                           {password === confirmPassword
-                            ? <CheckIcon className="w-4 h-4 text-accent-mint" />
+                            ? <CheckIcon className="w-4 h-4 text-accent-blue" />
                             : <XIcon className="w-4 h-4 text-accent-pink" />}
                         </span>
                       )}
@@ -483,9 +483,9 @@ function AuthPageInner() {
 
             {/* Success state */}
             {success && (
-              <div className="flex items-start gap-2.5 p-3 bg-accent-mint/10 border border-accent-mint/30 rounded-xl fade-in-up">
-                <CheckIcon className="w-4 h-4 text-accent-mint flex-shrink-0 mt-0.5" />
-                <p className="font-hand text-sm text-accent-mint">{success}</p>
+              <div className="flex items-start gap-2.5 p-3 bg-accent-blue/10 border border-accent-blue/30 rounded-xl fade-in-up">
+                <CheckIcon className="w-4 h-4 text-accent-blue flex-shrink-0 mt-0.5" />
+                <p className="font-hand text-sm text-accent-blue">{success}</p>
               </div>
             )}
 

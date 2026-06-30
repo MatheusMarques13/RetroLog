@@ -143,19 +143,17 @@ export default function ProfileSetupPage() {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-bg-primary">
-      <div className="scanlines fixed inset-0 pointer-events-none z-50 opacity-20" />
-
       {/* ── LEFT BRANDING PANEL ── */}
       <aside className="lg:w-[44%] bg-dark relative overflow-hidden flex flex-col justify-center items-center p-8 lg:p-16 min-h-[40vh] lg:min-h-screen">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent-mint/20 via-transparent to-accent-pink/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/20 via-transparent to-accent-pink/10" />
         <div className="absolute inset-0" style={{ backgroundImage: 'repeating-linear-gradient(0deg,rgba(255,255,255,0.02) 0px,transparent 1px,transparent 4px)' }} />
         <div className="absolute inset-0 opacity-30 shimmer" />
 
         {/* Floating icons */}
         {[
           { Icon: FilmIcon, color: 'text-accent-pink', pos: 'top-[12%] left-[10%]', delay: '0s' },
-          { Icon: GamepadIcon, color: 'text-accent-yellow', pos: 'top-[20%] right-[12%]', delay: '1.2s' },
-          { Icon: BookIcon, color: 'text-accent-mint', pos: 'bottom-[25%] left-[8%]', delay: '2s' },
+          { Icon: GamepadIcon, color: 'text-accent-blue', pos: 'top-[20%] right-[12%]', delay: '1.2s' },
+          { Icon: BookIcon, color: 'text-accent-blue', pos: 'bottom-[25%] left-[8%]', delay: '2s' },
           { Icon: VinylIcon, color: 'text-accent-blue', pos: 'bottom-[15%] right-[10%]', delay: '0.6s' },
         ].map(({ Icon, color, pos, delay }, i) => (
           <div key={i} className={`absolute ${pos} float-anim hidden lg:block`} style={{ animationDelay: delay }}>
@@ -166,7 +164,7 @@ export default function ProfileSetupPage() {
         ))}
 
         <div className="relative z-10 text-center max-w-sm w-full">
-          <h1 className="font-pixel text-3xl md:text-4xl text-accent-pink mb-3" style={{ textShadow: '3px 3px 0 #FFD93D' }}>
+          <h1 className="wordmark text-3xl md:text-4xl mb-3">
             RetroLog
           </h1>
           <p className="font-hand text-xl text-white/90 mb-2">
@@ -177,12 +175,12 @@ export default function ProfileSetupPage() {
           </p>
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-left backdrop-blur-sm">
-            <p className="font-pixel text-[9px] text-accent-yellow mb-3 tracking-widest">WHAT YOU CAN DO</p>
+            <p className="section-label text-white/40 mb-3">WHAT YOU CAN DO</p>
             <ul className="space-y-2.5">
               {[
                 ['Rate and review across 5 media types', 'text-accent-pink'],
-                ['Build curated lists and collections', 'text-accent-yellow'],
-                ['Track your backlog and diary', 'text-accent-mint'],
+                ['Build curated lists and collections', 'text-accent-pink'],
+                ['Track your backlog and diary', 'text-accent-blue'],
                 ['Share your profile with friends', 'text-accent-blue'],
               ].map(([t, c], i) => (
                 <li key={i} className="flex items-start gap-2.5 text-white/75 font-hand text-sm">
@@ -199,7 +197,7 @@ export default function ProfileSetupPage() {
         <div className="paper-grain absolute inset-0 pointer-events-none" />
         <div className="w-full max-w-md relative z-10">
           <div className="text-center mb-8">
-            <SparklesIcon className="w-7 h-7 text-accent-yellow mx-auto mb-3" />
+            <SparklesIcon className="w-7 h-7 text-accent-pink mx-auto mb-3" />
             <p className="font-hand text-xl text-txt-primary font-bold">Set up your profile</p>
             <p className="font-hand text-sm text-txt-secondary">
               Pick a username and tell us about yourself.
@@ -237,7 +235,7 @@ export default function ProfileSetupPage() {
                 {username && !checkingUsername && (
                   <span className="absolute right-3 top-1/2 -translate-y-1/2">
                     {usernameValid && usernameAvailable
-                      ? <CheckIcon className="w-4 h-4 text-accent-mint" />
+                      ? <CheckIcon className="w-4 h-4 text-accent-blue" />
                       : <XIcon className="w-4 h-4 text-accent-pink" />}
                   </span>
                 )}
@@ -254,7 +252,7 @@ export default function ProfileSetupPage() {
                 <p className="font-hand text-xs text-accent-pink mt-1">Username is taken</p>
               )}
               {username && usernameValid && usernameAvailable === true && (
-                <p className="font-hand text-xs text-accent-mint mt-1">Username available</p>
+                <p className="font-hand text-xs text-accent-blue mt-1">Username available</p>
               )}
               <p className="font-mono text-[10px] text-txt-secondary mt-1">retro-log.vercel.app/profile/{username || '...'}</p>
             </div>
@@ -302,10 +300,10 @@ export default function ProfileSetupPage() {
             <button
               type="submit"
               disabled={saving || !usernameValid || !usernameAvailable || !displayName.trim()}
-              className={`w-full py-3.5 rounded-xl font-hand font-bold text-base text-white border-2 border-dark transition-all duration-200 flex items-center justify-center gap-2 ${
+              className={`w-full py-3.5 rounded-xl font-body font-semibold text-base text-white border border-accent-pink-deep/30 transition-all duration-200 flex items-center justify-center gap-2 ${
                 saving || !usernameValid || !usernameAvailable || !displayName.trim()
                   ? 'bg-accent-pink/50 cursor-not-allowed shadow-none'
-                  : 'bg-accent-pink shadow-retro hover:shadow-retro-lg hover:-translate-y-0.5 active:shadow-none active:translate-y-0'
+                  : 'bg-accent-pink shadow-sticker hover:shadow-sticker-lg hover:-translate-y-0.5 active:shadow-none active:translate-y-0'
               }`}
             >
               {saving ? (

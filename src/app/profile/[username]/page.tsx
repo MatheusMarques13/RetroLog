@@ -293,10 +293,10 @@ function TabLists() {
           const Icon = MEDIA_ICONS[l.mediaType] || ListIcon
           const color = MEDIA_COLORS[l.mediaType] || 'text-accent-pink'
           return (
-            <div key={l.id} className="retro-card retro-card-hover p-5 space-y-2 border-accent-yellow/30">
+            <div key={l.id} className="retro-card retro-card-hover p-5 space-y-2 border-accent-pink/30">
               <div className="flex items-center gap-2">
                 <Icon className={`w-4 h-4 ${color} flex-shrink-0`} />
-                <span className="chip chip-yellow text-[10px]">pinned</span>
+                <span className="chip chip-pink text-[10px]">pinned</span>
               </div>
               <p className="font-hand font-bold text-txt-primary">{l.title}</p>
               <p className="font-hand text-sm text-txt-secondary line-clamp-2">{l.description}</p>
@@ -319,7 +319,7 @@ function TabLists() {
             <div key={l.id} className="retro-card retro-card-hover p-5 space-y-2">
               <div className="flex items-center gap-2">
                 <Icon className={`w-4 h-4 ${color} flex-shrink-0`} />
-                {l.isPinned && <span className="chip chip-yellow text-[10px]">pinned</span>}
+                {l.isPinned && <span className="chip chip-pink text-[10px]">pinned</span>}
               </div>
               <p className="font-hand font-bold text-txt-primary">{l.title}</p>
               <p className="font-hand text-sm text-txt-secondary line-clamp-2">{l.description}</p>
@@ -353,7 +353,7 @@ function TabFavorites() {
       {/* Games */}
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <GamepadIcon className="w-4 h-4 text-accent-yellow" />
+          <GamepadIcon className="w-4 h-4 text-accent-blue" />
           <p className="section-label mb-0">Games</p>
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
@@ -364,7 +364,7 @@ function TabFavorites() {
       {/* Books */}
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <BookIcon className="w-4 h-4 text-accent-mint" />
+          <BookIcon className="w-4 h-4 text-accent-blue" />
           <p className="section-label mb-0">Books</p>
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
@@ -429,7 +429,7 @@ function TabDiary() {
         {mockDiary.map(d => {
           const Icon = MEDIA_ICONS[d.type] || FilmIcon
           const color = MEDIA_COLORS[d.type] || 'text-accent-pink'
-          const moodColors: Record<string, string> = { intense: 'chip-pink', emotional: 'chip-pink', comfort: 'chip-yellow', focused: 'chip-mint', curious: 'chip-blue' }
+          const moodColors: Record<string, string> = { intense: 'chip-pink', emotional: 'chip-pink', comfort: 'chip-pink', focused: 'chip-blue', curious: 'chip-blue' }
           return (
             <div key={d.id} className="retro-card p-4 retro-card-hover">
               <div className="flex items-start gap-3">
@@ -468,7 +468,7 @@ function TabCollection() {
     .filter(c => statusFilter === 'all' || c.status === statusFilter)
 
   const statusColors: Record<string, string> = {
-    finished: 'chip-mint', in_progress: 'chip-yellow', owned: 'chip-blue', wishlist: 'chip-pink',
+    finished: 'chip-blue', in_progress: 'chip-yellow', owned: 'chip-blue', wishlist: 'chip-pink',
   }
 
   return (
@@ -528,7 +528,7 @@ function TabCollection() {
 
 function TabBacklog() {
   const priorityColor = { high: 'chip-pink', medium: 'chip-yellow', low: 'chip' } as const
-  const statusColor = { next: 'text-accent-mint', queued: 'text-accent-yellow', someday: 'text-txt-secondary' } as const
+  const statusColor = { next: 'text-accent-blue', queued: 'text-accent-yellow', someday: 'text-txt-secondary' } as const
 
   return (
     <div className="fade-in-up space-y-4">
@@ -597,8 +597,8 @@ function TabStats() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Hours Watched', val: mockStats.hoursWatched.toLocaleString(), color: 'text-accent-pink', icon: FilmIcon },
-          { label: 'Hours Played', val: mockStats.hoursPlayed.toLocaleString(), color: 'text-accent-yellow', icon: GamepadIcon },
-          { label: 'Pages Read', val: mockStats.pagesRead.toLocaleString(), color: 'text-accent-mint', icon: BookIcon },
+          { label: 'Hours Played', val: mockStats.hoursPlayed.toLocaleString(), color: 'text-accent-blue', icon: GamepadIcon },
+          { label: 'Pages Read', val: mockStats.pagesRead.toLocaleString(), color: 'text-accent-blue', icon: BookIcon },
           { label: 'Hours Listened', val: mockStats.hoursListened.toLocaleString(), color: 'text-accent-blue', icon: VinylIcon },
         ].map(s => (
           <StatBlock key={s.label} label={s.label} value={s.val} color={s.color} icon={s.icon} />
@@ -610,8 +610,8 @@ function TabStats() {
         <div className="retro-card p-5">
           <p className="section-label">Current Streak</p>
           <div className="flex items-center gap-2">
-            <FireIcon className="w-6 h-6 text-accent-yellow" />
-            <span className="font-mono text-3xl font-bold text-accent-yellow">{mockStats.currentStreak}</span>
+            <FireIcon className="w-6 h-6 text-accent-pink" />
+            <span className="font-mono text-3xl font-bold text-accent-pink">{mockStats.currentStreak}</span>
             <span className="font-hand text-txt-secondary">days</span>
           </div>
           <p className="font-hand text-xs text-txt-secondary mt-1">Longest: {mockStats.longestStreak} days</p>
@@ -684,7 +684,7 @@ function TabStats() {
           <p className="section-label">Top Genres</p>
           <div className="flex flex-wrap gap-2">
             {mockStats.topGenres.map((g, i) => (
-              <span key={g} className={`chip ${i < 3 ? 'chip-pink' : i < 5 ? 'chip-yellow' : 'chip-mint'}`}>{g}</span>
+              <span key={g} className={`chip ${i % 2 === 0 ? 'chip-pink' : 'chip-blue'}`}>{g}</span>
             ))}
           </div>
         </div>
@@ -696,7 +696,7 @@ function TabStats() {
               <span className="font-hand text-sm text-txt-primary">Most active: <span className="font-bold">{mockStats.mostActiveDay}</span></span>
             </div>
             <div className="flex items-center gap-2">
-              <ClockIcon className="w-4 h-4 text-accent-mint" />
+              <ClockIcon className="w-4 h-4 text-accent-blue" />
               <span className="font-hand text-sm text-txt-primary">Peak time: <span className="font-bold">{mockStats.mostActiveTime}</span></span>
             </div>
           </div>
@@ -745,9 +745,9 @@ function TabStats() {
       </div>
 
       {/* Year in review */}
-      <div className="retro-card p-5 border-accent-yellow/30 bg-accent-yellow/5 text-center">
-        <SparklesIcon className="w-6 h-6 text-accent-yellow mx-auto mb-2" />
-        <p className="font-pixel text-xs text-accent-yellow mb-1">YEAR IN REVIEW 2026</p>
+      <div className="retro-card p-5 border-accent-pink/30 bg-accent-pink/5 text-center">
+        <SparklesIcon className="w-6 h-6 text-accent-pink mx-auto mb-2" />
+        <p className="section-label text-accent-pink mb-1">YEAR IN REVIEW 2026</p>
         <p className="font-hand text-sm text-txt-secondary">Your personalized year-in-review is generating. Check back in December!</p>
       </div>
     </div>
@@ -762,7 +762,7 @@ function TabSocial() {
         {[
           { label: 'Followers', val: mockUser.stats.followers, color: 'text-accent-pink' },
           { label: 'Following', val: mockUser.stats.following, color: 'text-accent-blue' },
-          { label: 'Mutuals', val: mockUser.stats.mutuals, color: 'text-accent-mint' },
+          { label: 'Mutuals', val: mockUser.stats.mutuals, color: 'text-accent-blue' },
         ].map(({ label, val, color }) => (
           <div key={label} className="retro-card p-4 text-center">
             <p className={`font-mono text-2xl font-bold ${color}`}>{val.toLocaleString()}</p>
@@ -784,7 +784,7 @@ function TabSocial() {
                 <p className="font-hand font-bold text-sm text-txt-primary">{u.displayName}</p>
                 <p className="font-mono text-xs text-txt-secondary">@{u.username}</p>
               </div>
-              {u.mutual && <span className="chip chip-mint text-[10px]">mutual</span>}
+              {u.mutual && <span className="chip chip-blue text-[10px]">mutual</span>}
               <span className="font-mono text-xs text-txt-secondary">{u.reviews} reviews</span>
             </div>
           ))}
@@ -865,7 +865,7 @@ function TabAbout() {
         <p className="section-label">Taste Tags</p>
         <div className="flex flex-wrap gap-2">
           {mockUser.tasteTags.map((t, i) => (
-            <span key={t} className={`chip ${i % 4 === 0 ? 'chip-pink' : i % 4 === 1 ? 'chip-yellow' : i % 4 === 2 ? 'chip-mint' : 'chip-blue'}`}>{t}</span>
+            <span key={t} className={`chip ${i % 2 === 0 ? 'chip-pink' : 'chip-blue'}`}>{t}</span>
           ))}
         </div>
       </div>
@@ -895,7 +895,7 @@ function TabAbout() {
         <p className="section-label">Favorite Creators & Studios</p>
         <div className="flex flex-wrap gap-2">
           {mockUser.favoriteCreators.map(c => (
-            <span key={c} className="chip chip-yellow">{c}</span>
+            <span key={c} className="chip">{c}</span>
           ))}
         </div>
       </div>
@@ -1072,12 +1072,7 @@ export default function ProfilePage({ params }: { params: { username: string } }
   return (
     <div className="min-h-screen bg-bg-primary">
       {/* COVER */}
-      <div
-        className="w-full h-36 md:h-48 border-b border-border relative overflow-hidden"
-        style={{ background: 'linear-gradient(115deg, #FFE4EE 0%, #FFFDF8 50%, #E3F2FD 100%)' }}
-      >
-        <div className="paper-grain absolute inset-0 opacity-50" />
-      </div>
+      <div className="w-full h-24 md:h-32 bg-bg-secondary border-b border-border" />
 
       {/* PROFILE HEADER */}
       <div className="max-w-5xl mx-auto px-4 md:px-6">
@@ -1092,12 +1087,8 @@ export default function ProfilePage({ params }: { params: { username: string } }
           </div>
           {/* Info */}
           <div className="flex-1 pb-1">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <h1 className="font-hand font-bold text-2xl text-txt-primary">{displayName}</h1>
-              {isDemo && mockUser.isVerified && <span className="chip chip-blue text-[10px]"><CheckIcon className="w-3 h-3" />verified</span>}
-              {isDemo && mockUser.isSupporter && <span className="chip chip-yellow text-[10px]"><StarFilledIcon className="w-3 h-3" />supporter</span>}
-            </div>
-            <p className="font-mono text-sm text-txt-secondary">@{params.username}</p>
+            <h1 className="font-display font-bold text-2xl text-txt-primary tracking-tight mb-0.5">{displayName}</h1>
+            <p className="font-mono text-sm text-txt-muted">@{params.username}</p>
             {pronouns && <p className="font-hand text-sm text-txt-secondary mt-0.5">{pronouns}</p>}
           </div>
           {/* Actions */}

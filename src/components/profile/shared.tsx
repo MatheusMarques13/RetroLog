@@ -10,16 +10,17 @@ export const MEDIA_ICONS: Record<string, React.ComponentType<React.SVGProps<SVGS
   album: VinylIcon, artist: PersonIcon,
 }
 
+// Restrained two-tone palette: pink + pastel blue only
 export const MEDIA_COLORS: Record<string, string> = {
-  film: 'text-accent-pink', game: 'text-accent-yellow',
-  book: 'text-accent-mint', album: 'text-accent-blue',
-  artist: 'text-accent-pink', list: 'text-accent-mint',
+  film: 'text-accent-pink', game: 'text-accent-blue',
+  book: 'text-accent-pink', album: 'text-accent-blue',
+  artist: 'text-accent-pink', list: 'text-accent-blue',
   social: 'text-accent-blue',
 }
 
 export const MEDIA_BG: Record<string, string> = {
-  film: 'bg-accent-pink/10', game: 'bg-accent-yellow/10',
-  book: 'bg-accent-mint/10', album: 'bg-accent-blue/10',
+  film: 'bg-accent-pink/10', game: 'bg-accent-blue/10',
+  book: 'bg-accent-pink/10', album: 'bg-accent-blue/10',
   artist: 'bg-accent-pink/10',
 }
 
@@ -95,9 +96,9 @@ export function FilterChips({ filters, active, onChange }: { filters: { id: stri
 export function StatBlock({ label, value, color, icon: Icon }: { label: string; value: string | number; color: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> }) {
   return (
     <div className="retro-card p-4 text-center">
-      <Icon className={`w-5 h-5 ${color} mx-auto mb-2`} />
-      <p className={`font-mono text-xl font-bold ${color}`}>{typeof value === 'number' ? value.toLocaleString() : value}</p>
-      <p className="font-hand text-xs text-txt-secondary">{label}</p>
+      <Icon className={`w-5 h-5 ${color} opacity-70 mx-auto mb-2`} />
+      <p className="font-mono text-xl font-bold text-txt-primary">{typeof value === 'number' ? value.toLocaleString() : value}</p>
+      <p className="text-xs text-txt-muted">{label}</p>
     </div>
   )
 }

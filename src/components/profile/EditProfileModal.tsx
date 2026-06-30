@@ -227,7 +227,7 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSave }: E
 
               <div>
                 <p className="section-label">Cover Image</p>
-                <div className="w-full h-24 rounded-xl bg-gradient-to-r from-accent-pink/20 via-accent-yellow/20 to-accent-mint/20 border-2 border-dashed border-border flex items-center justify-center cursor-pointer hover:border-accent-pink transition-colors">
+                <div className="w-full h-24 rounded-xl bg-gradient-to-r from-accent-pink/20 via-accent-yellow/20 to-accent-blue/20 border-2 border-dashed border-border flex items-center justify-center cursor-pointer hover:border-accent-pink transition-colors">
                   <div className="text-center">
                     <CameraIcon className="w-5 h-5 text-txt-secondary mx-auto mb-1" />
                     <p className="font-hand text-xs text-txt-secondary">Click to upload</p>
